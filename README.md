@@ -1,94 +1,8 @@
-# 🏨 AstraStay — Hệ Thống Quản Lý & Đặt Phòng Khách Sạn Chuẩn Production
+# 🏨 AstraStay — Hệ Thống Quản Lý & Đặt Phòng Khách Sạn Chuẩn 
 > **Ứng dụng Web Full-Stack Node.js khai thác Cơ sở dữ liệu phân tán NoSQL Apache Cassandra / DataStax Astra DB Cloud**  
-> *Đồ án môn học Cơ sở dữ liệu NoSQL / Apache Cassandra — Nhóm thực hiện: Nhóm Đồ Án 2026*
-
+> *Đồ án môn học Cơ sở dữ liệu NoSQL / Apache Cassandra 
 ---
-
-## 📌 Bảng Điều Hướng Nhanh (Table of Contents)
-- [1. Giới thiệu Dự án & Quyết định Đề tài](#1-giới-thiệu-dự-án--quyết-định-đề-tài)
-- [2. Hướng dẫn Đẩy Dự án lên GitHub (Dành cho Trưởng nhóm)](#2-hướng-dẫn-đẩy-dự-án-lên-github-dành-cho-trưởng-nhóm)
-- [3. Hướng dẫn Cài đặt & Khởi chạy (Dành cho Thành viên nhóm)](#3-hướng-dẫn-cài-đặt--khởi-chạy-dành-cho-thành-viên-nhóm)
-- [4. Kiến trúc Tổng thể & Chi tiết Từng Thành phần](#4-kiến-trúc-tổng-thể--chi-tiết-từng-thành-phần)
-- [5. Thiết kế Dữ liệu NoSQL theo Tư duy Query-First](#5-thiết-kế-dữ-liệu-nosql-theo-tư-duy-query-first)
-- [6. Tính Nhất quán Dữ liệu với Cassandra Logged Batch](#6-tính-nhất-quán-dữ-liệu-với-cassandra-logged-batch)
-- [7. Hướng dẫn Trải nghiệm & Kịch bản Thuyết trình Demo](#7-hướng-dẫn-trải-nghiệm--kịch-bản-thuyết-trình-demo)
-- [8. Danh mục RESTful API Endpoints](#8-danh-mục-restful-api-endpoints)
-- [9. Bảng So sánh Chuyên sâu: Cassandra vs. SQL Truyền thống](#9-bảng-so-sánh-chuyên-sâu-cassandra-vs-sql-truyền-thống)
-- [10. Xử lý Lỗi Thường Gặp (Troubleshooting)](#10-xử-lý-lỗi-thường-gặp-troubleshooting)
-
----
-
-## 1. Giới thiệu Dự án & Quyết định Đề tài
-
-Trong tài liệu hướng dẫn thực hành (*Mục 11.2, trang 22* của `Huong_Dan_Cassandra_AstraDB_QuanLyKhachSan.pdf`), có 4 đề tài gợi ý:
-1. **Đề tài 1**: Hệ thống đặt phòng khách sạn trực tuyến (mini) — Nghiệp vụ giao dịch OLTP cốt lõi.
-2. **Đề tài 2**: Dashboard thống kê doanh thu khách sạn — Nghiệp vụ báo cáo BI & Phân tích số liệu.
-3. **Đề tài 3**: Hệ thống cảnh báo phòng trống theo thời gian thực — Giám sát công suất phòng.
-4. **Đề tài 4**: Phân tích hành vi đặt phòng của khách hàng — Khai thác khách hàng thân thiết.
-
-### 🎯 Quyết định Kiến trúc của Nhóm:
-Nhóm lựa chọn **ĐỀ TÀI 1 LÀM NỀN TẢNG TRỌNG TÂM**, đồng thời **TÍCH HỢP TOÀN DIỆN CẢ 3 ĐỀ TÀI CÒN LẠI** vào hệ thống tạo thành một bộ ứng dụng hoàn chỉnh (Full Production Suite):
-- **Cổng Khách Hàng (Customer Portal)**: `http://localhost:3000`
-  - Tra cứu khách sạn theo điểm tham quan (POI), lọc phòng theo trạng thái, tính tiền tự động (giá gốc + 5% service charge + 10% VAT).
-  - Đặt phòng nguyên tử bằng **Cassandra Logged Batch**, xuất hoá đơn điện tử tức thì.
-  - Tra cứu đơn đặt phòng thông minh: hiển thị sẵn **danh sách các đơn đặt gần nhất** để bấm chọn nhanh, tra cứu theo UUID hoặc mã khách hàng, huỷ đơn an toàn.
-- **Cổng Quản Trị & Lễ Tân (Admin Portal)**: `http://localhost:3000/admin`
-  - **Sơ đồ phòng (Room Matrix Grid)**: Quản lý trực quan trạng thái từng phòng (Trống / Có khách / Bảo trì), 1-click chuyển trạng thái tức thì.
-  - **Lịch trình đón khách (Booking Schedule)**: Hiển thị đầy đủ mã UUID (kèm nút sao chép 1-click) và huy hiệu mã khách hàng (`guest_id`), lọc theo ngày/khách sạn.
-  - **Dashboard Doanh thu (Đề tài 2)**: Biểu đồ cột doanh thu theo khách sạn, biểu đồ xu hướng doanh thu qua các tháng (`Chart.js`).
-  - **Cảnh báo Công suất (Đề tài 3)**: Đo lường tỷ lệ lấp đầy phòng thời gian thực qua thẻ KPI và biểu đồ donut.
-  - **Khách hàng Thân thiết (Đề tài 4)**: Bảng xếp hạng Top khách quen đặt phòng nhiều nhất.
-- **CQL Live Inspector**: Cửa sổ giả lập terminal trên cả 2 trang, hiển thị **thời gian thực các câu lệnh CQL** được thực thi ngầm kèm thời gian chạy tính bằng mili-giây ($ms$) — công cụ đắc lực khi bảo vệ đồ án trước giảng viên.
-
----
-
-## 2. Hướng dẫn Đẩy Dự án lên GitHub (Dành cho Trưởng nhóm)
-
-Dự án đã cấu hình sẵn `.gitignore` để loại trừ `node_modules`, `.env`, và các file chứng chỉ `.zip` (tránh lộ token bảo mật).
-
-### Các bước thực hiện:
-
-#### Bước 1: Mở PowerShell tại thư mục dự án `d:\Cassandra`
-```powershell
-cd d:\Cassandra
-```
-
-#### Bước 2: Khởi tạo Git và thực hiện Commit đầu tiên
-```bash
-# Khởi tạo kho git cục bộ
-git init
-
-# Thêm tất cả tệp vào danh sách chuẩn bị commit
-git add .
-
-# Tạo commit đầu tiên
-git commit -m "feat: complete AstraStay hotel management system with Node.js and Apache Cassandra"
-
-# Đổi nhánh mặc định thành main
-git branch -M main
-```
-
-#### Bước 3: Tạo Repository trên GitHub và Đẩy mã nguồn lên
-1. Truy cập [github.com/new](https://github.com/new).
-2. Đặt tên Repository (ví dụ: `cassandra-hotel-management` hoặc `AstraStay-Cassandra`).
-3. Chọn chế độ **Public** hoặc **Private** tuỳ nhóm.
-4. **Không tích chọn** *Add a README file*, *.gitignore* hoặc *License* (vì dự án đã có sẵn).
-5. Nhấn **Create repository**.
-6. Sao chép URL của repo và chạy 2 lệnh sau trên terminal máy tính:
-```bash
-# Thay thế URL bên dưới bằng URL repo GitHub của bạn:
-git remote add origin https://github.com/<tai-khoan-cua-ban>/<ten-repo>.git
-
-# Đẩy code lên nhánh main
-git push -u origin main
-```
-
-> [!IMPORTANT]
-> File `.gitignore` đã được cấu hình chặt chẽ để **không đẩy tệp `.env` và `*.zip` lên GitHub**. Thành viên khác khi tải code về sẽ cấu hình file `.env` theo mẫu `.env.example` hoặc chạy ngay ở chế độ Mock Demo mà không cần cài đặt phức tạp.
-
----
-
-## 3. Hướng dẫn Cài đặt & Khởi chạy (Dành cho Thành viên nhóm)
+Hướng dẫn Cài đặt & Khởi chạy (Dành cho Thành viên nhóm)
 
 ### Yêu cầu Tiên quyết:
 - Đã cài đặt **Node.js** (phiên bản 18.x trở lên, khuyến nghị Node.js 20 hoặc 24).
@@ -111,14 +25,14 @@ npm install
 
 Dự án được xây dựng với cơ chế **Dual-Engine** thông minh:
 
-#### 🟢 CHẾ ĐỘ 1: Chạy Ngay Lập Tức với Mock Engine (Khuyên dùng khi xem code hoặc demo nhanh)
+#### CHẾ ĐỘ 1: Chạy Ngay Lập Tức với Mock Engine (Khuyên dùng khi xem code hoặc demo nhanh)
 Không cần tài khoản DataStax Astra DB, không cần tải file bundle, không cần cấu hình `.env`!
 ```bash
 npm start
 ```
 Ứng dụng sẽ tự động kích hoạt **Smart Mock Engine** trong RAM với đầy đủ dữ liệu mẫu từ `Hotel.cql` (10 khách sạn, 12 điểm du lịch, 48 phòng nghỉ, 12 khách hàng, 15 đơn đặt phòng và 15 hoá đơn với tổng doanh thu hơn 176 triệu VNĐ). Mọi tính năng từ đặt phòng Logged Batch đến sơ đồ phòng và biểu đồ Chart.js đều chạy 100% bình thường.
 
-#### 🔵 CHẾ ĐỘ 2: Kết nối trực tiếp DataStax Astra DB Cloud Thật (Chấm điểm thực tế)
+#### CHẾ ĐỘ 2: Kết nối trực tiếp DataStax Astra DB Cloud Thật (Chấm điểm thực tế)
 Dành cho việc kiểm tra khả năng kết nối Cloud thực tế theo đúng yêu cầu đề bài:
 
 1. Đăng nhập [astra.datastax.com](https://astra.datastax.com) và tạo một Serverless Cassandra Database (ví dụ tên: `hotel_management_demo`, Keyspace: `hotel_reservations_vn`).
@@ -155,9 +69,9 @@ Dành cho việc kiểm tra khả năng kết nối Cloud thực tế theo đún
 
 ---
 
-## 4. Kiến trúc Tổng thể & Chi tiết Từng Thành phần
+### Kiến trúc Tổng thể & Chi tiết Từng Thành phần
 
-### 4.1. Sơ đồ Kiến trúc Hệ thống
+### Sơ đồ Kiến trúc Hệ thống
 
 ```
 +-------------------------------------------------------------------------------+
@@ -195,7 +109,7 @@ Dành cho việc kiểm tra khả năng kết nối Cloud thực tế theo đún
 +-------------------------------------------------------------------------------+
 ```
 
-### 4.2. Bản đồ Thư mục & Trách nhiệm Từng Tệp Tin
+### Bản đồ Thư mục & Trách nhiệm Từng Tệp Tin
 
 ```
 d:/Cassandra/
@@ -238,7 +152,7 @@ d:/Cassandra/
 
 ---
 
-## 5. Thiết kế Dữ liệu NoSQL theo Tư duy Query-First
+## Thiết kế Dữ liệu NoSQL theo Tư duy Query-First
 
 Khác biệt cốt lõi nhất giữa Cassandra và SQL truyền thống:
 - **SQL (Data-First)**: Chuẩn hoá các bảng (3NF), tránh dư thừa dữ liệu, khi cần lấy thông tin thì dùng `JOIN`.
@@ -258,12 +172,9 @@ Khác biệt cốt lõi nhất giữa Cassandra và SQL truyền thống:
 | **Q5** | Chi tiết hoá đơn của một đơn đặt phòng | `invoices_by_booking` | `booking_id` | `invoice_id` (ASC) | Lấy tức thì thông tin thanh toán khi có mã đơn đặt. |
 | **Q9** | Hồ sơ thông tin cá nhân khách hàng | `guests` | `guest_id` | *(Không có)* | Lưu trữ họ tên, điện thoại, email, địa chỉ khách hàng. |
 
-> [!TIP]
-> **Quy tắc Vàng**: Toàn bộ các truy vấn trong ứng dụng đều được chỉ định chính xác Partition Key và Clustering Column. **100% không sử dụng `ALLOW FILTERING`**, đảm bảo tốc độ phản hồi tính bằng mili-giây kể cả khi dữ liệu lên tới hàng triệu bản ghi.
-
 ---
 
-## 6. Tính Nhất quán Dữ liệu với Cassandra Logged Batch
+## Tính Nhất quán Dữ liệu với Cassandra Logged Batch
 
 ### Tại sao đơn đặt phòng phải lưu ở cả 2 bảng?
 Do Cassandra không có phép `JOIN`:
@@ -306,52 +217,7 @@ Node tiếp nhận (Coordinator Node) sẽ ghi nhận một bản ghi Batch Log 
 
 ---
 
-## 7. Hướng dẫn Trải nghiệm & Kịch bản Thuyết trình Demo
-
-Khi trình bày cho giảng viên hoặc các bạn trong nhóm, hãy thực hiện theo kịch bản 5 bước chuẩn sau:
-
-### Bước 1: Khám phá Khách sạn theo Điểm Du Lịch (POI)
-1. Mở Cổng Khách Hàng tại `http://localhost:3000`.
-2. Tại thanh tìm kiếm, chọn Điểm tham quan: `Chợ Bến Thành`.
-3. Bấm **Tìm kiếm**: Danh sách các khách sạn gần Chợ Bến Thành (Rex Hotel Sài Gòn, Caravelle Sài Gòn) hiển thị ngay lập tức.
-4. Mở nút **CQL Live Inspector** ở góc dưới bên phải màn hình: Giảng viên sẽ thấy ngay câu truy vấn ngầm:
-   `SELECT hotel_id, poi_name, hotel_name, address, star_rating FROM hotels_by_poi WHERE poi_name = ?;` với thời gian thực thi tính bằng mili-giây.
-
-### Bước 2: Đặt Phòng Trực Tuyến & Hoá Đơn Điện Tử
-1. Bấm **Xem phòng** tại khách sạn *Rex Hotel Sài Gòn*.
-2. Chọn phòng có trạng thái `Trống` (ví dụ: Phòng 101 - Deluxe City View) và nhấn **Đặt ngay**.
-3. Modal đặt phòng mở ra: Nhập thông tin khách hàng, ngày nhận phòng, ngày trả phòng.
-4. Chú ý phần **Chi tiết thanh toán**: Hệ thống tự động tính tiền phòng + 5% phí dịch vụ + 10% VAT.
-5. Nhấn **Xác nhận đặt phòng & Thanh toán**:
-   - Modal chúc mừng mở ra hiển thị mã đơn đặt phòng UUID đầy đủ (kèm nút sao chép 1-click) và nút **In hoá đơn**.
-   - Mở **CQL Live Inspector**: Quan sát lệnh `BEGIN BATCH ... APPLY BATCH;` ghi đồng thời vào 4 bảng.
-
-### Bước 3: Tra Cứu & Huỷ Đặt Phòng
-1. Cuộn xuống phần **Tra cứu đơn đặt phòng**:
-   - Chú ý khu vực **Đơn đặt phòng gần nhất**: Bấm trực tiếp vào bất kỳ thẻ đơn nào để tra cứu tức thì mà không cần tự nhập mã!
-   - Hoặc dán mã UUID vừa sao chép vào ô tìm kiếm và bấm **Tra cứu**.
-2. Chi tiết đặt phòng và hoá đơn VAT hiển thị đầy đủ.
-3. Bấm nút **Huỷ đơn đặt**: Hệ thống thực hiện Batch cập nhật trạng thái `CANCELLED` ở cả 2 bảng `bookings_by_guest` và `bookings_by_hotel_date`, đồng thời trả trạng thái phòng về `AVAILABLE`.
-
-### Bước 4: Sơ Đồ Phòng Trực Quan Dạng Lưới (Cổng Quản Trị)
-1. Chuyển sang Cổng Quản Trị tại `http://localhost:3000/admin`.
-2. Xem tab **Sơ đồ phòng (Room Matrix)**:
-   - Các phòng hiển thị màu trực quan: Xanh lá (Trống), Đỏ (Có khách), Vàng (Bảo trì).
-   - Bấm trực tiếp vào nút **Có khách / Trống / Bảo trì** trên từng thẻ phòng: Trạng thái phòng được cập nhật tức thì vào bảng `rooms_by_hotel` bằng câu lệnh `UPDATE ... WHERE hotel_id = ? AND room_number = ?`.
-
-### Bước 5: Lịch Trình Đón Khách & Dashboard Doanh Thu
-1. Chuyển sang tab **Lịch trình đặt phòng**:
-   - Bảng hiển thị danh sách khách đến theo từng khách sạn.
-   - Cột **Mã đặt phòng** hiển thị đầy đủ UUID kèm nút sao chép màu xanh tiện lợi.
-   - Cột **Mã khách hàng** hiển thị rõ ràng mã định danh (ví dụ `GUEST001`, `GUEST002`).
-2. Chuyển sang tab **Dashboard Báo Cáo**:
-   - Xem 4 thẻ KPI: Tổng số phòng, Tỷ lệ lấp đầy (Cảnh báo thời gian thực - Đề tài 3), Tổng doanh thu, Tổng lượt đặt phòng.
-   - Xem 2 biểu đồ Chart.js trực quan: Biểu đồ cột Doanh thu theo khách sạn và Biểu đồ diện tích Xu hướng doanh thu theo các tháng (Đề tài 2).
-   - Xem bảng **Top Khách hàng thân thiết** xếp hạng theo số lần đặt phòng và tổng chi tiêu (Đề tài 4).
-
----
-
-## 8. Danh mục RESTful API Endpoints
+## Danh mục RESTful API Endpoints
 
 | Method | Endpoint URL | Chức năng nghiệp vụ | Bảng Cassandra truy xuất |
 | :--- | :--- | :--- | :--- |
@@ -373,7 +239,7 @@ Khi trình bày cho giảng viên hoặc các bạn trong nhóm, hãy thực hi�
 
 ---
 
-## 9. Bảng So sánh Chuyên sâu: Cassandra vs. SQL Truyền thống
+## Bảng So sánh Chuyên sâu: Cassandra vs. SQL Truyền thống
 
 | Tiêu chí so sánh | Cơ sở dữ liệu Quan hệ RDBMS (MySQL, PostgreSQL) | Cơ sở dữ liệu NoSQL (Apache Cassandra / Astra DB) |
 | :--- | :--- | :--- |
@@ -386,7 +252,7 @@ Khi trình bày cho giảng viên hoặc các bạn trong nhóm, hãy thực hi�
 
 ---
 
-## 10. Xử lý Lỗi Thường Gặp (Troubleshooting)
+## Xử lý Lỗi Thường Gặp (Troubleshooting)
 
 ### 1. Lỗi `NoHostAvailable` hoặc kết nối Astra DB thất bại
 - **Nguyên nhân**: Token sai hoặc hết hạn, file Secure Connect Bundle `.zip` bị đặt sai đường dẫn, hoặc tường lửa chặn cổng 29042.
@@ -414,4 +280,3 @@ Khi trình bày cho giảng viên hoặc các bạn trong nhóm, hãy thực hi�
 - 📕 [`Huong_Dan_Cassandra_AstraDB_QuanLyKhachSan.pdf`](./Huong_Dan_Cassandra_AstraDB_QuanLyKhachSan.pdf): Tài liệu bài giảng lý thuyết và bài tập môn học.
 
 ---
-*Chúc nhóm thực hiện đồ án thành công và đạt điểm số tối đa! 🎉*
