@@ -1,0 +1,84 @@
+/* Custom styles for AstraStay Hotel Management System */
+:root {
+  --primary: #1e3a8a;
+  --primary-hover: #172554;
+  --accent: #d97706;
+  --accent-hover: #b45309;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: #f8fafc;
+  color: #1e293b;
+}
+
+.gradient-hero {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #312e81 100%);
+}
+
+.card-glass {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.badge-available {
+  background-color: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.badge-occupied {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.badge-maintenance {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+/* Sơ đồ phòng Room Grid Box */
+.room-box {
+  transition: all 0.2s ease-in-out;
+}
+.room-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom Scrollbar cho CQL Inspector */
+.cql-log-container::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.cql-log-container::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+.cql-log-container::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 3px;
+}
+.cql-log-container::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* In ấn hoá đơn */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printableInvoice, #printableInvoice * {
+    visibility: visible;
+  }
+  #printableInvoice {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+  }
+}

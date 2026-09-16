@@ -1,0 +1,36 @@
+# Dependency directories
+node_modules/
+
+# Environment variables & secrets (KHÔNG commit token lên GitHub)
+.env
+.env.local
+.env.*.local
+
+# DataStax Astra DB Secure Connect Bundles
+*.zip
+secure-connect-*.zip
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+# Office temporary lock files
+~$*
+
+# Python caches
+__pycache__/
+*.pyc
+

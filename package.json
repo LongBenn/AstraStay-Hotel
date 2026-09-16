@@ -1,0 +1,29 @@
+{
+  "name": "astra-hotel-management",
+  "version": "1.0.0",
+  "description": "Production-grade Hotel Booking and Management System built with Node.js, Express, and Apache Cassandra / DataStax Astra DB",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node --watch src/app.js",
+    "init-db": "node src/scripts/init-db.js",
+    "seed": "node src/scripts/seed-data.js"
+  },
+  "keywords": [
+    "cassandra",
+    "astradb",
+    "hotel-management",
+    "nodejs",
+    "express",
+    "nosql"
+  ],
+  "author": "Antigravity Team",
+  "license": "MIT",
+  "dependencies": {
+    "cassandra-driver": "^4.7.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "uuid": "^11.1.0"
+  }
+}

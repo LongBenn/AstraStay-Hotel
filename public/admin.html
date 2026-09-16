@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AstraStay | Cổng Quản Trị & Lễ Tân Khách Sạn (Cassandra / Astra DB)</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="bg-slate-100 min-h-screen flex flex-col antialiased">
+
+  <!-- ADMIN NAVBAR -->
+  <header class="bg-slate-900 text-white sticky top-0 z-40 shadow-lg border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Logo Admin -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white font-black shadow-lg">
+            <i class="fa-solid fa-hotel text-lg"></i>
+          </div>
+          <div>
+            <div class="text-base font-bold tracking-tight flex items-center gap-2">
+              <span>AstraStay Admin</span>
+              <span class="text-[10px] font-extrabold bg-blue-500/20 text-blue-400 border border-blue-500/40 px-2 py-0.5 rounded-full uppercase">Lễ Tân & Quản Trị</span>
+            </div>
+            <div class="text-[11px] text-slate-400">Hệ Thống Điều Hành Khách Sạn NoSQL Cassandra</div>
+          </div>
+        </div>
+
+        <!-- Connection Status Badge -->
+        <div class="hidden lg:flex items-center gap-3">
+          <div id="dbConnectionBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-slate-400"></span> Đang kết nối...
+          </div>
+        </div>
+
+        <!-- Admin Nav Tabs & Link to Guest -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          
+          <nav class="flex items-center gap-1 bg-slate-800/80 p-1 rounded-xl border border-slate-700">
+            <button id="btn-tab-rooms-schedule" onclick="switchAdminTab('tab-rooms-schedule')" 
+                    class="admin-tab-btn px-3 py-1.5 text-xs font-bold rounded-lg border-b-2 border-blue-600 text-blue-400 bg-blue-50/10 transition-all flex items-center gap-1.5">
+              <i class="fa-solid fa-table-cells-large"></i>
+              <span class="hidden sm:inline">Sơ Đồ Phòng & Lịch Trình</span>
+            </button>
+            
+            <button id="btn-tab-dashboard" onclick="switchAdminTab('tab-dashboard')" 
+                    class="admin-tab-btn px-3 py-1.5 text-xs font-medium rounded-lg border-b-2 border-transparent text-slate-400 hover:text-white transition-all flex items-center gap-1.5">
+              <i class="fa-solid fa-chart-pie"></i>
+              <span class="hidden sm:inline">Dashboard Doanh Thu</span>
+            </button>
+          </nav>
+
+          <!-- Nút chuyển sang trang Khách hàng -->
+          <a href="/" class="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5">
+            <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+            <span class="hidden md:inline">Trang Khách Đặt Phòng</span>
+            <span class="md:hidden">Đặt Phòng</span>
+          </a>
+
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- ===================================================================== -->
+    <!-- TAB 1: SƠ ĐỒ PHÒNG & LỊCH TRÌNH ĐẶT PHÒNG (LỄ TÂN)                   -->
+    <!-- ===================================================================== -->
+    <section id="tab-rooms-schedule" class="admin-tab-content space-y-6">
+      
+      <!-- Bộ lọc chọn khách sạn sơ đồ phòng -->
+      <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-door-open text-blue-600"></i> Sơ Đồ Trạng Thái Phòng (Q2: rooms_by_hotel)
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">
+            Quản lý và cập nhật trạng thái phòng tức thì theo từng khách sạn thuộc chuỗi
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <label class="text-xs font-bold text-slate-700 whitespace-nowrap">Chọn cơ sở:</label>
+          <select id="adminHotelSelect" class="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[240px]">
+            <!-- Rendered dynamically -->
+          </select>
+          <button onclick="loadAdminRoomMatrix()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-colors text-xs" title="Làm mới sơ đồ">
+            <i class="fa-solid fa-rotate"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Sơ đồ phòng dạng lưới (Room Matrix Grid) -->
+      <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 pb-3 border-b border-slate-100 gap-2">
+          <div class="text-xs font-semibold text-slate-500">
+            <i class="fa-regular fa-hand-pointer text-blue-500 mr-1"></i> Bấm các nút dưới mỗi phòng để chuyển đổi trạng thái:
+          </div>
+          <div class="flex items-center gap-4 text-xs font-bold">
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500"></span> Còn trống</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-red-500"></span> Đang có khách</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500"></span> Bảo trì</span>
+          </div>
+        </div>
+
+        <div id="adminRoomGridContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+
+      <!-- ================================================================= -->
+      <!-- BẢNG LỊCH TRÌNH ĐẶT PHÒNG THEO NGÀY (Q4: bookings_by_hotel_date)  -->
+      <!-- Hiển thị ĐẦY ĐỦ UUID (kèm nút Copy) và Mã Khách Hàng (guest_id)    -->
+      <!-- ================================================================= -->
+      <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+        
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between pb-4 border-b border-slate-100 gap-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-base font-extrabold text-slate-900">Lịch Trình Khách Đến (Q4: bookings_by_hotel_date)</h3>
+              <span id="scheduleBookingCount" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800">
+                0 lượt đặt
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Tra cứu danh sách đặt phòng theo khách sạn và khoảng thời gian. Có thể sao chép trực tiếp <strong>Mã Đặt Phòng (UUID)</strong> hoặc <strong>Mã Khách Hàng (guest_id)</strong> để tra cứu nhanh.
+            </p>
+          </div>
+
+          <!-- Bộ lọc khách sạn và ngày -->
+          <div class="flex flex-wrap items-center gap-2">
+            <select id="scheduleHotelSelect" class="bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <!-- Rendered dynamically -->
+            </select>
+            <div class="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-xl border border-slate-200 text-xs">
+              <span class="text-slate-400 text-[11px]">Từ:</span>
+              <input type="date" id="scheduleStartDate" class="bg-transparent border-none text-xs font-semibold focus:outline-none">
+            </div>
+            <div class="flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-xl border border-slate-200 text-xs">
+              <span class="text-slate-400 text-[11px]">Đến:</span>
+              <input type="date" id="scheduleEndDate" class="bg-transparent border-none text-xs font-semibold focus:outline-none">
+            </div>
+            <button onclick="loadAdminHotelSchedule()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-colors shadow-sm flex items-center gap-1">
+              <i class="fa-solid fa-filter"></i> Lọc dữ liệu
+            </button>
+          </div>
+        </div>
+
+        <!-- Bảng hiển thị đầy đủ thông tin -->
+        <div class="overflow-x-auto rounded-2xl border border-slate-200">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 text-slate-600 uppercase font-black tracking-wider border-b border-slate-200">
+              <tr>
+                <th class="p-3.5 min-w-[320px]">Mã Đặt Phòng (Booking UUID)</th>
+                <th class="p-3.5 min-w-[200px]">Khách Hàng (Tên & Mã)</th>
+                <th class="p-3.5">Phòng</th>
+                <th class="p-3.5 min-w-[130px]">Thời Gian Lưu Trú</th>
+                <th class="p-3.5">Tổng Tiền</th>
+                <th class="p-3.5">Trạng Thái</th>
+                <th class="p-3.5 text-right">Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="scheduleTableBody">
+              <!-- Rendered dynamically with full UUID and guest_id -->
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================================== -->
+    <!-- TAB 2: DASHBOARD THỐNG KÊ DOANH THU & BÁO CÁO (ĐỀ TÀI 2 & 4)        -->
+    <!-- ===================================================================== -->
+    <section id="tab-dashboard" class="admin-tab-content hidden space-y-6">
+      
+      <!-- Alert Cảnh báo phòng trống thời gian thực (Đề tài 3) -->
+      <div class="bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-900 rounded-3xl p-5 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-amber-300 font-bold flex-shrink-0 text-xl shadow-inner">
+            <i class="fa-solid fa-bell-concierge"></i>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+              Hệ thống giám sát công suất phòng thời gian thực (Đề tài 3)
+            </div>
+            <div class="text-sm font-semibold mt-0.5">Tất cả các cơ sở trong chuỗi khách sạn đang vận hành ổn định và đồng bộ dữ liệu NoSQL liên tục.</div>
+          </div>
+        </div>
+        <button onclick="loadAdminDashboardData()" class="px-4 py-2 bg-white/15 hover:bg-white/25 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 flex-shrink-0">
+          <i class="fa-solid fa-arrows-rotate"></i> Làm mới dữ liệu
+        </button>
+      </div>
+
+      <!-- 6 Thẻ KPI tổng quan -->
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        
+        <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
+          <div class="text-[11px] font-extrabold text-slate-400 uppercase">Tổng số phòng</div>
+          <div id="kpiTotalRooms" class="text-2xl font-black text-slate-900 mt-1">-</div>
+          <div class="text-[11px] text-slate-500 mt-1"><i class="fa-solid fa-door-closed text-blue-500 mr-1"></i>Toàn chuỗi</div>
+        </div>
+
+        <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
+          <div class="text-[11px] font-extrabold text-slate-400 uppercase">Đang có khách</div>
+          <div id="kpiOccupiedRooms" class="text-2xl font-black text-red-600 mt-1">-</div>
+          <div class="text-[11px] text-red-500 mt-1"><i class="fa-solid fa-user-check mr-1"></i>Phòng bận</div>
+        </div>
+
+        <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
+          <div class="text-[11px] font-extrabold text-slate-400 uppercase">Phòng còn trống</div>
+          <div id="kpiAvailableRooms" class="text-2xl font-black text-emerald-600 mt-1">-</div>
+          <div class="text-[11px] text-emerald-600 mt-1"><i class="fa-solid fa-bed mr-1"></i>Sẵn sàng đặt</div>
+        </div>
+
+        <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
+          <div class="text-[11px] font-extrabold text-slate-400 uppercase">Tỷ lệ lấp đầy</div>
+          <div id="kpiOccupancyRate" class="text-2xl font-black text-amber-600 mt-1">-%</div>
+          <div class="text-[11px] text-amber-600 mt-1"><i class="fa-solid fa-chart-simple mr-1"></i>Công suất phòng</div>
+        </div>
+
+        <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm lg:col-span-2">
+          <div class="text-[11px] font-extrabold text-slate-400 uppercase">Tổng doanh thu tích luỹ</div>
+          <div id="kpiTotalRevenue" class="text-2xl font-black text-blue-600 mt-1">-</div>
+          <div class="text-[11px] text-slate-500 mt-1">
+            Tổng cộng <span id="kpiTotalBookings" class="font-bold text-slate-800">-</span> lượt đặt phòng thành công
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Biểu đồ Chart.js (Đề tài 2) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Biểu đồ Doanh thu theo Khách sạn -->
+        <div class="lg:col-span-7 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-base font-extrabold text-slate-900">Doanh Thu Theo Khách Sạn (Đề tài 2)</h3>
+              <p class="text-xs text-slate-500">Khai thác và tổng hợp từ bảng <code class="font-mono text-blue-600">invoices_by_booking</code></p>
+            </div>
+            <span class="text-xs font-bold px-2.5 py-1 bg-blue-50 text-blue-600 rounded-xl border border-blue-100">Triệu VNĐ</span>
+          </div>
+          <div class="h-64">
+            <canvas id="chartHotelRevenue"></canvas>
+          </div>
+        </div>
+
+        <!-- Biểu đồ Tỷ lệ phòng Donut -->
+        <div class="lg:col-span-5 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-base font-extrabold text-slate-900">Tỷ Lệ Trạng Thái Phòng</h3>
+              <p class="text-xs text-slate-500">Giám sát công suất thời gian thực</p>
+            </div>
+          </div>
+          <div class="h-64 flex items-center justify-center">
+            <canvas id="chartRoomOccupancy"></canvas>
+          </div>
+        </div>
+
+        <!-- Biểu đồ Xu hướng Doanh thu theo tháng -->
+        <div class="lg:col-span-7 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-base font-extrabold text-slate-900">Xu Hướng Doanh Thu Các Tháng (2026)</h3>
+              <p class="text-xs text-slate-500">Phân tích mùa cao điểm du lịch</p>
+            </div>
+            <span class="text-xs font-bold px-2.5 py-1 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-100">Area Chart</span>
+          </div>
+          <div class="h-64">
+            <canvas id="chartMonthlyRevenue"></canvas>
+          </div>
+        </div>
+
+        <!-- Bảng Top Khách hàng thân thiết (Đề tài 4) -->
+        <div class="lg:col-span-5 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-base font-extrabold text-slate-900">Khách Hàng Thân Thiết (Đề tài 4)</h3>
+              <p class="text-xs text-slate-500">Khai thác từ bảng <code class="font-mono text-blue-600">bookings_by_guest</code></p>
+            </div>
+            <i class="fa-solid fa-crown text-amber-500 text-lg"></i>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left">
+              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+                <tr>
+                  <th class="p-3">Hạng</th>
+                  <th class="p-3">Họ và tên</th>
+                  <th class="p-3">Mã Khách</th>
+                  <th class="p-3 text-right">Lượt Đặt</th>
+                </tr>
+              </thead>
+              <tbody id="topGuestsTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: XEM CHI TIẾT ĐẶT PHÒNG TRÊN TRANG ADMIN                       -->
+  <!-- ===================================================================== -->
+  <div id="adminInvoiceDetailModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden animate-fadeIn">
+      
+      <div class="p-5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+        <div>
+          <h3 class="text-lg font-bold">Chi Tiết Đơn Đặt Phòng</h3>
+          <p class="text-xs text-slate-400 mt-0.5">Dữ liệu từ cụm NoSQL Cassandra</p>
+        </div>
+        <button onclick="closeAdminInvoiceDetailModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition-colors">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4 text-xs">
+        
+        <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+          <div>
+            <div class="text-[11px] font-bold text-slate-400 uppercase">Mã Đặt Phòng (UUID):</div>
+            <div class="flex items-center justify-between gap-2 mt-0.5">
+              <span id="admDetailBookingId" class="font-mono text-xs font-bold text-blue-700 break-all select-all">-</span>
+              <button id="admBtnCopyUuid" class="px-2.5 py-1 text-[11px] font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center gap-1 flex-shrink-0">
+                <i class="fa-regular fa-copy"></i> Sao chép
+              </button>
+            </div>
+          </div>
+
+          <div class="border-t border-slate-200 pt-2">
+            <div class="text-[11px] font-bold text-slate-400 uppercase">Mã Khách Hàng (guest_id):</div>
+            <div class="flex items-center justify-between gap-2 mt-0.5">
+              <span id="admDetailGuestId" class="font-mono text-xs font-bold text-slate-800">-</span>
+              <button id="admBtnCopyGuestId" class="px-2 py-0.5 text-[11px] bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg transition-colors flex items-center gap-1 flex-shrink-0">
+                <i class="fa-regular fa-copy"></i> Sao chép
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <div class="text-slate-400 font-medium">Khách hàng:</div>
+            <div id="admDetailGuestName" class="font-bold text-slate-900 text-sm mt-0.5">-</div>
+          </div>
+          <div>
+            <div class="text-slate-400 font-medium">Khách sạn:</div>
+            <div id="admDetailHotelName" class="font-bold text-slate-900 text-sm mt-0.5">-</div>
+          </div>
+          <div>
+            <div class="text-slate-400 font-medium">Phòng:</div>
+            <div id="admDetailRoom" class="font-bold text-slate-900 text-sm mt-0.5">-</div>
+          </div>
+          <div>
+            <div class="text-slate-400 font-medium">Trạng thái:</div>
+            <div id="admDetailStatus" class="font-bold text-emerald-600 text-sm mt-0.5">-</div>
+          </div>
+        </div>
+
+        <div class="p-3 bg-blue-50/60 rounded-xl border border-blue-100 flex items-center justify-between">
+          <span class="text-slate-600 font-semibold">Tổng thanh toán:</span>
+          <span id="admDetailTotal" class="text-base font-black text-blue-700">-</span>
+        </div>
+
+      </div>
+
+      <div class="p-4 bg-slate-50 border-t border-slate-100 text-right">
+        <button onclick="closeAdminInvoiceDetailModal()" class="px-5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl transition-colors">
+          Đóng
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ===================================================================== -->
+  <!-- CQL QUERY INSPECTOR (FLOATING DRAWER)                                -->
+  <!-- ===================================================================== -->
+  <div id="cqlInspectorPanel" class="fixed bottom-0 right-4 sm:right-8 w-[95vw] sm:w-[580px] bg-slate-950 border border-slate-800 rounded-t-2xl shadow-2xl z-50 transform translate-y-full transition-transform duration-300 flex flex-col max-h-[420px]">
+    
+    <div onclick="toggleCqlDrawer()" class="p-3 bg-slate-900 border-b border-slate-800 rounded-t-2xl cursor-pointer flex items-center justify-between text-white select-none">
+      <div class="flex items-center gap-2">
+        <div class="w-3 h-3 rounded-full bg-emerald-400 animate-ping"></div>
+        <span class="text-xs font-mono font-bold text-emerald-400">&gt;_ CQL Live Inspector (Admin Mode)</span>
+        <span id="cqlLogCount" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">0</span>
+      </div>
+      <div class="flex items-center gap-2 text-xs text-slate-400">
+        <span class="text-[11px] hidden sm:inline">Cassandra Queries</span>
+        <i class="fa-solid fa-chevron-up transition-transform"></i>
+      </div>
+    </div>
+
+    <div id="cqlLogsContainer" class="p-3 overflow-y-auto flex-1 space-y-2 cql-log-container bg-slate-950">
+      <!-- Rendered dynamically -->
+    </div>
+
+  </div>
+
+  <button onclick="toggleCqlDrawer()" 
+          class="fixed bottom-4 right-4 z-40 bg-slate-900 hover:bg-slate-800 text-emerald-400 border border-slate-700 px-3 py-2 rounded-xl shadow-2xl text-xs font-mono font-bold flex items-center gap-2 transition-all hover:scale-105">
+    <i class="fa-solid fa-terminal"></i>
+    <span>CQL Inspector</span>
+  </button>
+
+  <!-- SCRIPTS -->
+  <script src="/js/common.js"></script>
+  <script src="/js/charts.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>
