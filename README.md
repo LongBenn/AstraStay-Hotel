@@ -1,4 +1,4 @@
-# 🏨 AstraStay — Hệ Thống Quản Lý & Đặt Phòng Khách Sạn Chuẩn 
+# AstraStay — Hệ Thống Quản Lý & Đặt Phòng Khách Sạn Chuẩn 
 > **Ứng dụng Web Full-Stack Node.js khai thác Cơ sở dữ liệu phân tán NoSQL Apache Cassandra / DataStax Astra DB Cloud**  
 > *Đồ án môn học Cơ sở dữ liệu NoSQL / Apache Cassandra 
 ---
