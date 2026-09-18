@@ -96,6 +96,16 @@ async function loadHotels(poi = '') {
   }
 }
 
+function getHotelGallery(hotel) {
+  const fallback = [HOTEL_PLACEHOLDER_IMAGE];
+
+  const gallery = Array.isArray(hotel?.gallery) && hotel.gallery.length
+    ? hotel.gallery
+    : fallback;
+
+  return Array.from({ length: 4 }, (_, index) => getSafeHotelImageUrl(gallery[index] || hotel?.image_url));
+}
+
 function renderHotelList(hotels) {
   const container = document.getElementById('hotelListContainer');
   if (!container) return;
@@ -103,44 +113,52 @@ function renderHotelList(hotels) {
   if (hotels.length === 0) {
     container.innerHTML = `
       <div class="col-span-full text-center py-12 text-slate-500">
-        <i class="fa-solid fa-hotel text-4xl mb-3 text-slate-300"></i>
+        <div class="brand-mark brand-mark--small mx-auto mb-3">
+          <span>A</span>
+        </div>
         <p>Không tìm thấy khách sạn nào phù hợp tại khu vực này.</p>
       </div>`;
     return;
   }
 
-  container.innerHTML = hotels.map(h => `
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col">
-      <div class="relative h-48 bg-slate-200 overflow-hidden">
-        <img src="${h.image_url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80'}" 
-             alt="${h.name}" class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500">
-        <div class="absolute top-3 right-3 bg-amber-500 text-white px-2.5 py-1 rounded-full text-xs font-bold shadow flex items-center gap-1">
-          <i class="fa-solid fa-star text-xs"></i> ${h.star_rating || 5} Sao
+  container.innerHTML = hotels.map(h => {
+    const gallery = getHotelGallery(h);
+    return `
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col">
+        <div class="relative bg-slate-200 overflow-hidden hotel-card-media">
+          <div class="hotel-card-gallery">
+            ${gallery.map((img, idx) => `
+              <img src="${img}" alt="${h.name} - ảnh ${idx + 1}" onerror="hotelImageErrorHandler(this)" class="${idx === 0 ? 'hotel-card-main' : ''}">
+            `).join('')}
+          </div>
+          <div class="absolute top-3 right-3 bg-amber-500 text-white px-2.5 py-1 rounded-full text-xs font-bold shadow flex items-center gap-1">
+            <i class="fa-solid fa-star text-xs"></i> ${h.star_rating || 5} Sao
+          </div>
+        </div>
+        <div class="p-5 flex-1 flex flex-col justify-between">
+          <div>
+            <div class="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1">${h.city || 'Việt Nam'}</div>
+            <h3 class="text-lg font-bold text-slate-900 mb-2">${h.name}</h3>
+            <p class="text-xs text-slate-500 flex items-center gap-1.5 mb-2">
+              <i class="fa-solid fa-location-dot text-red-500 flex-shrink-0"></i>
+              <span class="truncate">${h.address}</span>
+            </p>
+            <p class="text-xs text-slate-500 flex items-center gap-1.5 mb-4">
+              <i class="fa-solid fa-phone text-emerald-600 flex-shrink-0"></i>
+              <span>${h.phone || '028 3829 2185'}</span>
+            </p>
+          </div>
+          <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+            <div class="text-xs text-slate-400">Giá chỉ từ <span class="text-sm font-bold text-slate-800">800.000đ</span>/đêm</div>
+            <button onclick="openHotelRoomsModal('${h.hotel_id}')" 
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition-colors flex items-center gap-1.5">
+              Xem phòng <i class="fa-solid fa-arrow-right text-xs"></i>
+            </button>
+          </div>
         </div>
       </div>
-      <div class="p-5 flex-1 flex flex-col justify-between">
-        <div>
-          <div class="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1">${h.city || 'Việt Nam'}</div>
-          <h3 class="text-lg font-bold text-slate-900 mb-2">${h.name}</h3>
-          <p class="text-xs text-slate-500 flex items-center gap-1.5 mb-2">
-            <i class="fa-solid fa-location-dot text-red-500 flex-shrink-0"></i>
-            <span class="truncate">${h.address}</span>
-          </p>
-          <p class="text-xs text-slate-500 flex items-center gap-1.5 mb-4">
-            <i class="fa-solid fa-phone text-emerald-600 flex-shrink-0"></i>
-            <span>${h.phone || '028 3829 2185'}</span>
-          </p>
-        </div>
-        <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
-          <div class="text-xs text-slate-400">Giá chỉ từ <span class="text-sm font-bold text-slate-800">800.000đ</span>/đêm</div>
-          <button onclick="openHotelRoomsModal('${h.hotel_id}')" 
-                  class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition-colors flex items-center gap-1.5">
-            Xem phòng <i class="fa-solid fa-arrow-right text-xs"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 // Cập nhật các dropdown chọn khách sạn ở Admin & Schedule
@@ -167,16 +185,32 @@ async function openHotelRoomsModal(hotelId) {
     const titleEl = document.getElementById('modalHotelName');
     const descEl = document.getElementById('modalHotelDesc');
     const roomsContainer = document.getElementById('modalRoomsContainer');
+    const hotelGallery = getHotelGallery(state.selectedHotel);
 
     if (titleEl) titleEl.innerText = state.selectedHotel.name;
     if (descEl) descEl.innerText = `${state.selectedHotel.address} • Hotline: ${state.selectedHotel.phone}`;
 
     if (roomsContainer) {
-      roomsContainer.innerHTML = rooms.map(r => {
+      const galleryMarkup = `
+        <div class="room-hero-gallery">
+          <div class="main-image">
+            <img src="${hotelGallery[0]}" alt="${state.selectedHotel.name} - hình ảnh chính" />
+          </div>
+          ${hotelGallery.slice(1, 4).map((img, idx) => `
+            <div class="thumb">
+              <img src="${img}" alt="${state.selectedHotel.name} - ảnh ${idx + 2}" />
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      const roomMarkup = rooms.map((r, index) => {
         const isAvail = r.status === 'AVAILABLE';
+        const roomImage = hotelGallery[(index + 1) % hotelGallery.length] || hotelGallery[0];
         return `
           <div class="border border-slate-200 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-blue-300 transition-colors">
-            <div class="flex items-center gap-4">
+            <div class="room-list-item">
+              <img src="${roomImage}" alt="${r.room_type}" class="room-thumb" />
               <div class="w-14 h-14 rounded-xl bg-blue-50 text-blue-600 font-bold flex flex-col items-center justify-center border border-blue-100 flex-shrink-0">
                 <span class="text-xs uppercase text-slate-400">Phòng</span>
                 <span class="text-lg">${r.room_number}</span>
@@ -209,6 +243,8 @@ async function openHotelRoomsModal(hotelId) {
           </div>
         `;
       }).join('');
+
+      roomsContainer.innerHTML = `${galleryMarkup}${roomMarkup}`;
     }
 
     // Hiển thị modal

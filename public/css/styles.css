@@ -1,25 +1,186 @@
 /* Custom styles for AstraStay Hotel Management System */
 :root {
-  --primary: #1e3a8a;
-  --primary-hover: #172554;
-  --accent: #d97706;
-  --accent-hover: #b45309;
+  --primary: #18324f;
+  --primary-hover: #10263e;
+  --accent: #c8943d;
+  --accent-hover: #a9782d;
+  --blue-soft: #3f78ad;
+  --ink: #20344a;
+  --surface: #f4f7fa;
 }
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background-color: #f8fafc;
-  color: #1e293b;
+  background-color: var(--surface);
+  color: var(--ink);
+  overflow-x: hidden;
 }
 
-.gradient-hero {
-  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #312e81 100%);
+html {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+header {
+  overflow: hidden;
+}
+
+.hero-banner {
+  position: relative;
+  min-height: 360px;
+  background: linear-gradient(135deg, #18324f 0%, #2e5d87 55%, #456f91 100%);
+  isolation: isolate;
+}
+
+.hero-banner__bg,
+.hero-banner__overlay {
+  position: absolute;
+  inset: 0;
+}
+
+.hero-banner__bg {
+  background-image: url('/images/hero-hotel.png');
+  background-size: cover;
+  background-position: center center;
+  transform: scale(1.08);
+  animation: heroBgPan 22s ease-in-out infinite alternate;
+  filter: saturate(0.82) contrast(1.02);
+}
+
+.hero-banner__overlay {
+  background: linear-gradient(90deg, rgba(18, 39, 62, 0.62) 0%, rgba(35, 78, 113, 0.34) 48%, rgba(18, 39, 62, 0.18) 100%);
+}
+@keyframes heroBgPan {
+  0% {
+    transform: scale(1.08) translateX(-1.5%) translateY(0%);
+  }
+  50% {
+    transform: scale(1.12) translateX(1.2%) translateY(-1.5%);
+  }
+  100% {
+    transform: scale(1.15) translateX(2.5%) translateY(1%);
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-banner {
+    min-height: 420px;
+  }
+
+  .hero-banner__bg {
+    background-position: center center;
+  }
+}
+
+.brand-mark {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  min-height: 56px;
+  background: linear-gradient(135deg, #f1d18a 0%, #d9ab58 55%, #c58b39 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 8px 20px rgba(139, 100, 39, 0.22);
+  color: #20344a;
+  font-weight: 900;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-mark span {
+  color: #20344a;
+  font-weight: 900;
+  font-size: 1.1rem;
+  transform: translateY(-1px);
+}
+
+.brand-mark--small {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: 0.75rem;
 }
 
 .card-glass {
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.hotel-card-gallery {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem;
+  height: 220px;
+  margin: 0;
+  overflow: hidden;
+  background: #e2e8f0;
+}
+
+.hotel-card-media {
+  height: 220px;
+}
+
+.hotel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  align-items: stretch;
+}
+
+.hotel-card-gallery img,
+.room-hero-gallery img,
+.room-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.hotel-card-gallery img {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  object-fit: cover;
+  overflow: hidden;
+}
+
+.hotel-card-gallery img.hotel-card-main {
+  grid-row: span 3;
+}
+
+.room-hero-gallery {
+  display: grid;
+  grid-template-columns: 2fr repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.room-hero-gallery .main-image {
+  height: 220px;
+  overflow: hidden;
+  border-radius: 1rem;
+}
+
+.room-hero-gallery .thumb {
+  height: 100px;
+  overflow: hidden;
+  border-radius: 0.8rem;
+}
+
+.room-list-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.room-list-item .room-thumb {
+  width: 96px;
+  height: 96px;
+  border-radius: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  flex-shrink: 0;
 }
 
 .badge-available {
@@ -63,6 +224,146 @@ body {
 }
 .cql-log-container::-webkit-scrollbar-thumb:hover {
   background: #64748b;
+}
+
+/* Shared restrained palette for Tailwind utility colors used by both portals. */
+.bg-slate-900 { background-color: #18324f !important; }
+.bg-slate-950 { background-color: #10263e !important; }
+.bg-slate-800, .bg-slate-800\/80 { background-color: #23435f !important; }
+.bg-slate-100 { background-color: #eef3f7 !important; }
+.bg-slate-50 { background-color: #f4f7fa !important; }
+.bg-slate-200 { background-color: #dfe8ef !important; }
+.text-slate-900 { color: #20344a !important; }
+.text-slate-800 { color: #29445e !important; }
+.text-slate-700 { color: #3b5369 !important; }
+.text-slate-500 { color: #667d91 !important; }
+.text-slate-400 { color: #8a9aaa !important; }
+.border-slate-800, .border-slate-700 { border-color: #35546d !important; }
+.border-slate-200, .border-slate-300 { border-color: #d3dfe8 !important; }
+
+.bg-blue-700, .bg-blue-600 { background-color: #3f78ad !important; }
+.hover\:bg-blue-700:hover, .hover\:bg-blue-600:hover { background-color: #315f8c !important; }
+.bg-blue-500 { background-color: #5d8fb9 !important; }
+.bg-blue-50, .bg-blue-50\/60, .bg-blue-50\/10 { background-color: #e8f0f6 !important; }
+.bg-blue-100 { background-color: #d7e7f2 !important; }
+.bg-blue-200\/60 { background-color: #c7ddea !important; }
+.text-blue-900, .text-blue-800, .text-blue-700, .text-blue-600, .text-blue-500, .text-blue-400 { color: #2f6697 !important; }
+.border-blue-600, .border-blue-500, .border-blue-200, .border-blue-100 { border-color: #7fa8c7 !important; }
+.focus\:ring-blue-500:focus { --tw-ring-color: #7fa8c7 !important; }
+
+.bg-amber-500, .bg-amber-600, .bg-amber-700 { background-color: #3f78ad !important; }
+.hover\:bg-amber-600:hover, .hover\:bg-amber-700:hover { background-color: #315f8c !important; }
+.bg-amber-500\/20, .bg-amber-500\/30 { background-color: #dceaf4 !important; }
+.bg-amber-50 { background-color: #e8f0f6 !important; }
+.bg-amber-100, .bg-amber-200 { background-color: #d7e7f2 !important; }
+.text-amber-600, .text-amber-500, .text-amber-400, .text-amber-300, .text-amber-800, .text-amber-900 { color: #2f6697 !important; }
+.border-amber-500, .border-amber-400, .border-amber-300, .border-amber-200 { border-color: #7fa8c7 !important; }
+.ring-amber-400 { --tw-ring-color: #7fa8c7 !important; }
+
+.text-red-500 { color: #477da6 !important; }
+.text-red-600, .text-red-700 { color: #3d6687 !important; }
+.bg-red-50, .bg-red-100 { background-color: #eaf1f6 !important; }
+.border-red-200, .border-red-300 { border-color: #b8ccda !important; }
+.text-white { color: #ffffff !important; }
+
+.from-blue-700 { --tw-gradient-from: #315f8c var(--tw-gradient-from-position) !important; }
+.via-indigo-700 { --tw-gradient-via: #426f94 var(--tw-gradient-via-position) !important; }
+.to-indigo-800, .to-slate-900 { --tw-gradient-to: #18324f var(--tw-gradient-to-position) !important; }
+.bg-emerald-500 { background-color: #5f9c87 !important; }
+.text-emerald-600, .text-emerald-800 { color: #3f806b !important; }
+.bg-emerald-100 { background-color: #e1f0ea !important; }
+
+.site-footer {
+  background: #18324f;
+  color: #dbe9f3;
+  border-top: 1px solid #35546d;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(0, 1fr));
+  gap: 2.5rem;
+}
+
+.footer-title {
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 800;
+  margin: 0 0 1rem;
+}
+
+.footer-links,
+.footer-contact {
+  display: grid;
+  gap: 0.7rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.footer-links a {
+  color: #c9ddeb;
+  transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+  color: #e3bd72;
+}
+
+.footer-contact p {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin: 0;
+  color: #c9ddeb;
+}
+
+.footer-contact i {
+  width: 1rem;
+  margin-top: 0.2rem;
+  color: #d9ab58;
+}
+
+.footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(201, 221, 235, 0.2);
+  color: #a9c2d4;
+  font-size: 0.75rem;
+}
+
+.footer-bottom p {
+  margin: 0;
+}
+
+.footer-accent {
+  color: #e3bd72;
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  main {
+    min-width: 0;
+  }
+
+  .overflow-x-auto {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .footer-bottom {
+    align-items: flex-start;
+    flex-direction: column;
+    margin-top: 2rem;
+  }
 }
 
 /* In ấn hoá đơn */

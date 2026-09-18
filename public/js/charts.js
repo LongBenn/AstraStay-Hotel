@@ -23,18 +23,18 @@ function renderDashboardCharts(stats) {
           label: 'Doanh thu (Triệu VNĐ)',
           data: hotelRevenues,
           backgroundColor: [
-            'rgba(59, 130, 246, 0.85)',
-            'rgba(16, 185, 129, 0.85)',
-            'rgba(245, 158, 11, 0.85)',
-            'rgba(139, 92, 246, 0.85)',
-            'rgba(236, 72, 153, 0.85)'
+            'rgba(63, 120, 173, 0.85)',
+            'rgba(83, 139, 169, 0.85)',
+            'rgba(112, 151, 180, 0.85)',
+            'rgba(92, 119, 148, 0.85)',
+            'rgba(126, 158, 183, 0.85)'
           ],
           borderColor: [
-            '#2563eb',
-            '#059669',
-            '#d97706',
-            '#7c3aed',
-            '#db2777'
+            '#3f78ad',
+            '#538ba9',
+            '#7097b4',
+            '#5c7794',
+            '#7e9eb7'
           ],
           borderWidth: 1.5,
           borderRadius: 6
@@ -79,12 +79,12 @@ function renderDashboardCharts(stats) {
         datasets: [{
           label: 'Doanh thu tháng (Triệu VNĐ)',
           data: monthRevenues,
-          borderColor: '#4f46e5',
-          backgroundColor: 'rgba(79, 70, 229, 0.12)',
+          borderColor: '#3f78ad',
+          backgroundColor: 'rgba(63, 120, 173, 0.12)',
           fill: true,
           tension: 0.35,
           borderWidth: 3,
-          pointBackgroundColor: '#4f46e5',
+          pointBackgroundColor: '#3f78ad',
           pointRadius: 4,
           pointHoverRadius: 6
         }]

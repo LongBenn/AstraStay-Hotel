@@ -2,7 +2,27 @@ const cassandraService = require('../services/cassandraService');
 
 exports.getAllHotels = async (req, res) => {
   try {
-    const { poi } = req.query;
+    const { poi, checkin, checkout } = req.query;
+
+    if (checkin || checkout) {
+      if (!checkin || !checkout) {
+        return res.status(400).json({
+          success: false,
+          message: 'Vui lòng chọn đầy đủ ngày nhận và ngày trả phòng.'
+        });
+      }
+
+      const checkInDate = new Date(`${checkin}T00:00:00`);
+      const checkOutDate = new Date(`${checkout}T00:00:00`);
+
+      if (Number.isNaN(checkInDate.getTime()) || Number.isNaN(checkOutDate.getTime()) || checkOutDate.getTime() <= checkInDate.getTime()) {
+        return res.status(400).json({
+          success: false,
+          message: 'Ngày trả phòng phải lớn hơn ngày nhận phòng.'
+        });
+      }
+    }
+
     if (poi) {
       const hotelsInPoi = await cassandraService.getHotelsByPoi(poi);
       return res.json({ success: true, data: hotelsInPoi, poi });

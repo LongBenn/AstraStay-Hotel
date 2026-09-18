@@ -25,8 +25,8 @@
         
         <!-- Logo & Branding -->
         <div class="flex items-center gap-3 cursor-pointer" onclick="switchGuestTab('tab-explore')">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-slate-950 font-black shadow-lg">
-            <i class="fa-solid fa-hotel text-lg"></i>
+          <div class="brand-mark w-14 h-14 rounded-xl flex items-center justify-center text-slate-950 font-black shadow-lg">
+            <span class="text-lg">A</span>
           </div>
           <div>
             <div class="text-base font-bold tracking-tight flex items-center gap-2">
@@ -83,7 +83,9 @@
     <section id="tab-explore" class="tab-content space-y-6">
       
       <!-- Hero Banner & Bộ lọc POI -->
-      <div class="gradient-hero rounded-3xl p-6 sm:p-10 text-white shadow-xl relative overflow-hidden">
+      <div class="hero-banner rounded-3xl p-6 sm:p-10 text-white shadow-xl relative overflow-hidden">
+        <div class="hero-banner__bg" aria-hidden="true"></div>
+        <div class="hero-banner__overlay" aria-hidden="true"></div>
         <div class="relative z-10 max-w-3xl">
           <span class="px-3 py-1 rounded-full text-xs font-semibold bg-white/10 backdrop-blur border border-white/20 text-amber-300 uppercase tracking-wider mb-4 inline-block">
             Apache Cassandra & Astra DB Powered
@@ -122,7 +124,7 @@
             </div>
 
             <div class="sm:col-span-1">
-              <button onclick="loadGuestHotels(document.getElementById('poiFilter').value)" 
+              <button onclick="handleGuestSearch()" 
                       class="w-full bg-blue-600 hover:bg-blue-700 text-white h-[38px] rounded-xl flex items-center justify-center font-bold text-xs transition-colors shadow-md">
                 <i class="fa-solid fa-magnifying-glass"></i>
               </button>
@@ -144,7 +146,7 @@
           <button onclick="loadGuestHotels('')" class="text-xs font-bold text-blue-600 hover:text-blue-800">Xem tất cả</button>
         </div>
 
-        <div id="hotelListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div id="hotelListContainer" class="hotel-grid gap-6">
           <!-- Rendered dynamically -->
         </div>
       </div>
@@ -231,6 +233,48 @@
     </section>
 
   </main>
+
+  <footer class="site-footer mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="brand-mark brand-mark--small rounded-xl flex items-center justify-center font-black shadow-lg">
+              <span>A</span>
+            </div>
+            <div>
+              <div class="text-lg font-bold text-white">AstraStay</div>
+              <div class="text-xs text-blue-100">Kỳ nghỉ đáng nhớ</div>
+            </div>
+          </div>
+          <p class="text-sm text-blue-100 leading-6 max-w-sm">Không gian nghỉ dưỡng chỉn chu, kết nối bạn với những khách sạn đáng tin cậy tại các điểm đến nổi bật ở Việt Nam.</p>
+        </div>
+
+        <div>
+          <h2 class="footer-title">Khám phá</h2>
+          <nav class="footer-links" aria-label="Liên kết cuối trang">
+            <a href="#" onclick="switchGuestTab('tab-explore'); return false;">Trang chủ</a>
+            <a href="#hotelListContainer" onclick="switchGuestTab('tab-explore'); document.getElementById('hotelListContainer')?.scrollIntoView({ behavior: 'smooth' }); return false;">Đặt phòng</a>
+            <a href="#tab-lookup" onclick="switchGuestTab('tab-lookup'); return false;">Tra cứu đơn đặt phòng</a>
+          </nav>
+        </div>
+
+        <div>
+          <h2 class="footer-title">Liên hệ</h2>
+          <div class="footer-contact">
+            <p><i class="fa-solid fa-location-dot"></i> 141 Nguyễn Huệ, TP. Hồ Chí Minh</p>
+            <p><i class="fa-solid fa-phone"></i> 028 3829 2185</p>
+            <p><i class="fa-solid fa-envelope"></i> hello@astrastay.vn</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>© 2026 AstraStay. Bảo lưu mọi quyền.</p>
+        <span class="footer-accent">Nghỉ dưỡng theo cách của bạn</span>
+      </div>
+    </div>
+  </footer>
 
   <!-- ===================================================================== -->
   <!-- MODAL: XEM PHÒNG KHÁCH SẠN                                           -->
@@ -362,6 +406,64 @@
   <!-- ===================================================================== -->
   <!-- MODAL: HOÁ ĐƠN ĐIỆN TỬ VÀ MÃ XÁC NHẬN                                -->
   <!-- ===================================================================== -->
+<div id="paymentModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden animate-fadeIn">
+      <div class="p-5 bg-gradient-to-r from-blue-700 to-indigo-800 text-white flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-bold">Thanh Toán Chuyển Khoản</h3>
+          <p class="text-xs text-blue-200 mt-0.5">Xác nhận giao dịch trước khi hoàn tất đặt phòng</p>
+        </div>
+        <button onclick="closePaymentModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div class="flex justify-center">
+          <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
+            <img id="paymentQrImage" src="" alt="QR thanh toán" class="w-52 h-52 object-cover rounded-xl">
+          </div>
+        </div>
+
+        <div class="space-y-2 text-xs text-slate-700">
+          <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+            <span class="text-slate-500">Ngân hàng</span>
+            <span id="paymentBankName" class="font-bold text-slate-800">Vietcombank</span>
+          </div>
+          <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+            <span class="text-slate-500">Số tài khoản</span>
+            <span id="paymentAccountNumber" class="font-bold text-slate-800">0123456789</span>
+          </div>
+          <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+            <span class="text-slate-500">Tên người nhận</span>
+            <span id="paymentAccountName" class="font-bold text-slate-800">CÔNG TY ASTRASTAY</span>
+          </div>
+          <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+            <span class="text-slate-500">Số tiền</span>
+            <span id="paymentAmount" class="font-extrabold text-blue-600">0 đ</span>
+          </div>
+          <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+            <span class="text-slate-500">Nội dung CK</span>
+            <span id="paymentContent" class="font-bold text-slate-800 break-all text-right">ASTRA-</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-slate-500">Mã đơn hàng</span>
+            <span id="paymentOrderCode" class="font-bold text-slate-800">ASTRA-</span>
+          </div>
+        </div>
+
+        <div class="pt-2 flex gap-3">
+          <button type="button" onclick="closePaymentModal()" class="w-1/3 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors">
+            Đóng
+          </button>
+          <button type="button" onclick="confirmBankTransfer()" class="w-2/3 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-xl transition-all shadow-md">
+            Tôi đã chuyển khoản
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="bookingSuccessModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden animate-fadeIn">
       
@@ -371,8 +473,9 @@
           <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-2 text-xl">
             <i class="fa-solid fa-circle-check"></i>
           </div>
-          <h3 class="text-xl font-black text-slate-900">ĐẶT PHÒNG THÀNH CÔNG</h3>
-          <p class="text-xs text-slate-500">Hoá đơn điện tử thanh toán dịch vụ khách sạn</p>
+          <h3 id="successModalTitle" class="text-xl font-black text-slate-900">ĐẶT PHÒNG THÀNH CÔNG</h3>
+          <p id="successModalSubtitle" class="text-xs text-slate-500">Hoá đơn điện tử thanh toán dịch vụ khách sạn</p>
+          <p id="paymentStatusText" class="mt-2 text-[11px] font-bold text-amber-600">Chờ xác nhận thanh toán</p>
         </div>
 
         <div class="py-4 space-y-2.5 text-xs">

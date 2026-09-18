@@ -12,7 +12,11 @@ exports.createBooking = async (req, res) => {
       check_in_date,
       check_out_date,
       price_per_night,
-      nights
+      nights,
+      payment_status,
+      order_status,
+      order_code,
+      demo_mode
     } = req.body;
 
     if (!hotel_id || !room_number || !check_in_date || !check_out_date) {
@@ -24,6 +28,8 @@ exports.createBooking = async (req, res) => {
 
     const assignedGuestId = guest_id || `GUEST-${Date.now().toString().slice(-4)}`;
     const assignedGuestName = guest_name || 'Khách Vãng Lai';
+    const normalizedPaymentStatus = payment_status === 'PENDING_PAYMENT' ? 'PENDING_PAYMENT' : 'PAID';
+    const normalizedOrderStatus = order_status || (normalizedPaymentStatus === 'PENDING_PAYMENT' ? 'Chờ xác nhận thanh toán' : 'CONFIRMED');
 
     const result = await cassandraService.createBooking({
       guest_id: assignedGuestId,
@@ -35,12 +41,18 @@ exports.createBooking = async (req, res) => {
       check_in_date,
       check_out_date,
       price_per_night: parseFloat(price_per_night) || 1000000,
-      nights: parseInt(nights, 10) || 1
+      nights: parseInt(nights, 10) || 1,
+      payment_status: normalizedPaymentStatus,
+      order_status: normalizedOrderStatus,
+      order_code: order_code || `ASTRA-${Date.now()}`,
+      demo_mode: Boolean(demo_mode)
     });
 
     return res.status(201).json({
       success: true,
-      message: 'Đặt phòng thành công! Dữ liệu đã được đồng bộ qua Cassandra LOGGED BATCH vào cả hai bảng.',
+      message: normalizedPaymentStatus === 'PENDING_PAYMENT'
+        ? 'Đã ghi nhận yêu cầu thanh toán. Vui lòng chờ xác nhận.'
+        : 'Đặt phòng thành công! Dữ liệu đã được đồng bộ qua Cassandra LOGGED BATCH vào cả hai bảng.',
       data: result
     });
   } catch (error) {

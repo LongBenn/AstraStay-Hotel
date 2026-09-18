@@ -1,5 +1,18 @@
 // Common utilities shared between Guest and Admin portals
 
+const HOTEL_PLACEHOLDER_IMAGE = '/images/hotel-placeholder.jpg';
+
+function getSafeHotelImageUrl(imageUrl) {
+  return typeof imageUrl === 'string' && imageUrl.trim()
+    ? imageUrl.trim()
+    : HOTEL_PLACEHOLDER_IMAGE;
+}
+
+function hotelImageErrorHandler(imageElement) {
+  imageElement.onerror = null;
+  imageElement.src = HOTEL_PLACEHOLDER_IMAGE;
+}
+
 // Sao chép văn bản vào clipboard với thông báo tooltip trực quan
 function copyToClipboard(text, btnElement) {
   if (!navigator.clipboard) {

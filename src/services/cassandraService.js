@@ -278,7 +278,11 @@ class CassandraService {
     check_in_date,
     check_out_date,
     price_per_night,
-    nights
+    nights,
+    payment_status,
+    order_status,
+    order_code,
+    demo_mode
   }) {
     const booking_id = uuidv4();
     const invoice_id = uuidv4();
@@ -288,8 +292,10 @@ class CassandraService {
     const service_charge = Math.round(room_charge * 0.05); // 5% phí dịch vụ
     const tax = Math.round((room_charge + service_charge) * 0.1); // 10% VAT
     const total_amount = room_charge + service_charge + tax;
-    const status = 'CONFIRMED';
+    const status = payment_status === 'PENDING_PAYMENT' ? 'PENDING_PAYMENT' : 'CONFIRMED';
+    const effectiveOrderStatus = order_status || (status === 'PENDING_PAYMENT' ? 'Chờ xác nhận thanh toán' : 'CONFIRMED');
     const issued_at = new Date();
+    const paymentState = payment_status === 'PENDING_PAYMENT' ? 'PENDING' : 'PAID';
 
     const { isConnected, connectionMode } = getConnectionStatus();
 
@@ -322,7 +328,7 @@ class CassandraService {
       },
       {
         query: 'INSERT INTO invoices_by_booking (booking_id, invoice_id, guest_id, hotel_id, room_charge, service_charge, tax, total_amount, payment_status, issued_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);',
-        params: [cqlBookingId, cqlInvoiceId, guest_id, hotel_id, room_charge, service_charge, tax, total_amount, 'PAID', issued_at]
+        params: [cqlBookingId, cqlInvoiceId, guest_id, hotel_id, room_charge, service_charge, tax, total_amount, paymentState, issued_at]
       },
       {
         query: 'UPDATE rooms_by_hotel SET status = ? WHERE hotel_id = ? AND room_number = ?;',
@@ -344,7 +350,11 @@ class CassandraService {
       room_id: room_id || `RM-${room_num}`,
       check_out_date,
       total_amount,
-      status
+      status,
+      order_status: effectiveOrderStatus,
+      order_code: order_code || `ASTRA-${Date.now()}`,
+      demo_mode: Boolean(demo_mode),
+      payment_status: paymentState
     };
     mockStore.bookings_by_guest.unshift(newGuestBooking);
 
@@ -358,7 +368,11 @@ class CassandraService {
       room_id: room_id || `RM-${room_num}`,
       check_out_date,
       total_amount,
-      status
+      status,
+      order_status: effectiveOrderStatus,
+      order_code: order_code || `ASTRA-${Date.now()}`,
+      demo_mode: Boolean(demo_mode),
+      payment_status: paymentState
     };
     mockStore.bookings_by_hotel_date.unshift(newHotelBooking);
 
@@ -371,8 +385,11 @@ class CassandraService {
       service_charge,
       tax,
       total_amount,
-      payment_status: 'PAID',
-      issued_at
+      payment_status: paymentState,
+      issued_at,
+      order_code: order_code || `ASTRA-${Date.now()}`,
+      order_status: effectiveOrderStatus,
+      demo_mode: Boolean(demo_mode)
     };
     mockStore.invoices_by_booking.unshift(newInvoice);
 

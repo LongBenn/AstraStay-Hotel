@@ -11,6 +11,12 @@ const hotels = [
     address: '141 Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh',
     star_rating: 5,
     image_url: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80'
+    ],
     description: 'Biểu tượng khách sạn 5 sao di sản ngay trục phố đi bộ Nguyễn Huệ lịch sử.'
   },
   {
@@ -21,6 +27,12 @@ const hotels = [
     address: '19-23 Lam Sơn, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh',
     star_rating: 5,
     image_url: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80'
+    ],
     description: 'Trái tim của Sài Gòn, đối diện Nhà hát Thành phố với quầy bar tầng thượng trứ danh.'
   },
   {
@@ -31,6 +43,12 @@ const hotels = [
     address: '15 Ngô Quyền, Phường Tràng Tiền, Quận Hoàn Kiếm, TP. Hà Nội',
     star_rating: 5,
     image_url: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1563911302283-d2bc129e7570?auto=format&fit=crop&w=900&q=80'
+    ],
     description: 'Kiến trúc Pháp cổ thanh lịch, không gian yên bình cạnh hồ Hoàn Kiếm huyền bí.'
   },
   {
@@ -41,6 +59,12 @@ const hotels = [
     address: '123 Tôn Đức Thắng, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh',
     star_rating: 4,
     image_url: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1561501900-3701fa6a0864?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=900&q=80',
+      '/images/hotel-placeholder.jpg'
+    ],
     description: 'Khách sạn ven sông Sài Gòn với tầm nhìn khoáng đạt, đón gió sông trong lành.'
   },
   {
@@ -51,6 +75,12 @@ const hotels = [
     address: '45 Hàng Bạc, Hàng Bạc, Hoàn Kiếm, TP. Hà Nội',
     star_rating: 4,
     image_url: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&fit=crop&w=900&q=80'
+    ],
     description: 'Khách sạn boutique ấm cúng mang phong cách phố cổ 36 phố phường Hà Nội.'
   },
   {
@@ -61,6 +91,12 @@ const hotels = [
     address: 'Bán đảo Sơn Trà, Thọ Quang, Sơn Trà, TP. Đà Nẵng',
     star_rating: 5,
     image_url: 'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=800&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1519046904884-53103b34b206?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=900&q=80'
+    ],
     description: 'Khu nghỉ dưỡng sang trọng hàng đầu thế giới ẩn mình giữa thiên nhiên bán đảo Sơn Trà.'
   },
   {
@@ -71,6 +107,12 @@ const hotels = [
     address: '36 Bạch Đằng, Hải Châu 1, Hải Châu, TP. Đà Nẵng',
     star_rating: 5,
     image_url: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=800&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&fit=crop&w=900&q=80'
+    ],
     description: 'Khách sạn cao tầng bên bờ sông Hàn với tầm nhìn ngắm trọn Cầu Rồng phun lửa.'
   },
   {
@@ -81,6 +123,12 @@ const hotels = [
     address: 'Đảo Hòn Tre, Vĩnh Nguyên, TP. Nha Trang, Khánh Hòa',
     star_rating: 5,
     image_url: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1519046904884-53103b34b206?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=900&q=80'
+    ],
     description: 'Thiên đường nghỉ dưỡng biển đảo biệt lập với bãi cát trắng mịn và làn nước xanh như ngọc.'
   },
   {
@@ -91,6 +139,12 @@ const hotels = [
     address: 'Bãi Khem, An Thới, TP. Phú Quốc, Kiên Giang',
     star_rating: 5,
     image_url: 'https://images.unsplash.com/photo-1563911302283-d2bc129e7570?auto=format&fit=crop&w=800&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1563911302283-d2bc129e7570?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1519046904884-53103b34b206?auto=format&fit=crop&w=900&q=80'
+    ],
     description: 'Kiệt tác kiến trúc đại học huyền thoại bên bờ biển Bãi Khem đẹp nhất Phú Quốc.'
   },
   {
@@ -101,6 +155,12 @@ const hotels = [
     address: '02 Trần Phú, Phường 3, TP. Đà Lạt, Lâm Đồng',
     star_rating: 5,
     image_url: 'https://images.unsplash.com/photo-1561501900-3701fa6a0864?auto=format&fit=crop&w=800&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1561501900-3701fa6a0864?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=900&q=80',
+      '/images/hotel-placeholder.jpg',
+      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80'
+    ],
     description: 'Dinh thự Pháp cổ điển từ thập niên 1920 nhìn thẳng ra vẻ mộng mơ của hồ Xuân Hương.'
   }
 ];
