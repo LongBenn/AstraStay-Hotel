@@ -166,6 +166,8 @@ async function seedDatabase() {
         [fr.hotel_id, fr.rating, fr.review_id, fr.guest_id, fr.guest_name, fr.guest_avatar, fr.hotel_name, fr.room_id, fr.room_number, fr.room_type, fr.comment, fr.review_date, fr.is_featured, fr.helpful_count, fr.stay_date, fr.badge_title],
         { prepare: true }
       );
+    }
+
     // 15. Nạp reservations_by_confirmation (Q6)
     console.log('-> Nạp bảng reservations_by_confirmation (Q6)...');
     for (const r of (mockStore.reservations_by_confirmation || [])) {
