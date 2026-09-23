@@ -7,7 +7,9 @@
     "start": "node src/app.js",
     "dev": "node --watch src/app.js",
     "init-db": "node src/scripts/init-db.js",
-    "seed": "node src/scripts/seed-data.js"
+    "seed": "node src/scripts/seed-data.js",
+    "test": "node test/review-pricing.test.js && node test/hotel-review.test.js && node test/e2e-review-flow.test.js",
+    "test:reviews": "node test/hotel-review.test.js && node test/e2e-review-flow.test.js"
   },
   "keywords": [
     "cassandra",

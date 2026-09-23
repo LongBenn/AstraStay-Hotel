@@ -59,7 +59,27 @@
               <i class="fa-solid fa-magnifying-glass"></i>
               <span class="hidden sm:inline">Tra Cứu Đơn Đặt</span>
             </button>
+
+            <button id="btn-tab-about" onclick="switchGuestTab('tab-about')" 
+                    class="guest-tab-btn px-3 py-1.5 text-xs font-medium rounded-lg border-b-2 border-transparent text-slate-400 hover:text-white transition-all flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-info"></i>
+              <span class="hidden sm:inline">Về Chúng Tôi</span>
+            </button>
           </nav>
+
+          <!-- Bộ chuyển đổi tài khoản Người dùng (Kiểm thử Auth) -->
+          <div class="hidden lg:flex items-center gap-2 bg-slate-800/90 px-3 py-1.5 rounded-xl border border-slate-700 text-xs shadow-inner">
+            <i class="fa-solid fa-circle-user text-amber-400 text-sm"></i>
+            <span class="text-slate-400 text-[11px] font-medium">Tài khoản:</span>
+            <select id="userSelector" onchange="switchCurrentUser(this.value)" class="bg-slate-900 text-amber-300 font-bold text-xs border border-slate-700 rounded-lg px-2 py-0.5 focus:outline-none focus:ring-1 focus:ring-amber-400 cursor-pointer">
+              <option value="c262832f-6f09-4a4a-8e92-447304fcebd8" selected>Nguyễn Văn An (Có đơn đã ở Rex)</option>
+              <option value="0eacb0ae-a973-4bfd-9818-9a927b713cf4">Trần Thị Mai (Đã review Rex)</option>
+              <option value="GUEST001">Nguyễn Văn A (Đã ở Standard)</option>
+              <option value="GUEST002">Trần Thị B (Đơn CONFIRMED)</option>
+              <option value="GUEST_NEW">Khách Mới (Chưa từng đặt phòng)</option>
+              <option value="UNAUTHENTICATED">-- Chưa đăng nhập --</option>
+            </select>
+          </div>
 
           <!-- Nút chuyển sang Cổng Quản Trị / Lễ Tân -->
           <a href="/admin" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 border border-blue-500">
@@ -149,6 +169,131 @@
         <div id="hotelListContainer" class="hotel-grid gap-6">
           <!-- Rendered dynamically -->
         </div>
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- PHÂN HỆ: ĐÁNH GIÁ & BÌNH LUẬN NỔI BẬT (FEATURED REVIEWS)              -->
+      <!-- ===================================================================== -->
+      <div class="mt-14 pt-10 border-t border-slate-200">
+        
+        <!-- Section Header -->
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+          <div>
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 border border-amber-200/80 rounded-full text-[11px] font-extrabold text-amber-700 tracking-wide uppercase shadow-sm mb-2">
+              <i class="fa-solid fa-certificate text-amber-500"></i>
+              100% Khách Hàng Đã Lưu Trú Thật (Verified Stays)
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+              Đánh Giá & Bình Luận Nổi Bật
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
+              Những chia sẻ chân thực từ doanh nhân, gia đình và du khách về trải nghiệm nghỉ dưỡng 5 sao chuẩn quốc tế cùng hệ thống AstraStay.
+            </p>
+          </div>
+
+          <!-- Trust Score Badge -->
+          <div class="flex items-center gap-3 bg-white px-4 py-2.5 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center text-lg font-black shadow-md">
+              4.9
+            </div>
+            <div>
+              <div class="flex text-amber-400 text-xs">
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+              </div>
+              <div class="text-[11px] font-bold text-slate-700 mt-0.5">2.500+ Nhận xét xuất sắc</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trust Stats KPI Bar -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8">
+          <div class="bg-gradient-to-br from-blue-50 to-indigo-50/50 p-3.5 rounded-2xl border border-blue-100 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center text-sm shadow-sm flex-shrink-0">
+              <i class="fa-solid fa-shield-check"></i>
+            </div>
+            <div>
+              <div class="text-base font-black text-slate-900">100%</div>
+              <div class="text-[10px] sm:text-[11px] font-medium text-slate-500">Chống đánh giá ảo</div>
+            </div>
+          </div>
+
+          <div class="bg-gradient-to-br from-amber-50 to-orange-50/50 p-3.5 rounded-2xl border border-amber-100 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center text-sm shadow-sm flex-shrink-0">
+              <i class="fa-solid fa-heart"></i>
+            </div>
+            <div>
+              <div class="text-base font-black text-slate-900">98.6%</div>
+              <div class="text-[10px] sm:text-[11px] font-medium text-slate-500">Hài lòng tuyệt đối</div>
+            </div>
+          </div>
+
+          <div class="bg-gradient-to-br from-emerald-50 to-teal-50/50 p-3.5 rounded-2xl border border-emerald-100 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-sm shadow-sm flex-shrink-0">
+              <i class="fa-solid fa-bolt"></i>
+            </div>
+            <div>
+              <div class="text-base font-black text-slate-900">O(1)</div>
+              <div class="text-[10px] sm:text-[11px] font-medium text-slate-500">Cassandra Speed</div>
+            </div>
+          </div>
+
+          <div class="bg-gradient-to-br from-purple-50 to-pink-50/50 p-3.5 rounded-2xl border border-purple-100 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-purple-600 text-white flex items-center justify-center text-sm shadow-sm flex-shrink-0">
+              <i class="fa-solid fa-crown"></i>
+            </div>
+            <div>
+              <div class="text-base font-black text-slate-900">Top 1%</div>
+              <div class="text-[10px] sm:text-[11px] font-medium text-slate-500">Khách sạn tiêu biểu</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bộ lọc Review theo khách sạn (Filter Chips) -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-2 mb-6 scrollbar-none" id="featuredHotelFilterChips">
+          <button onclick="filterFeaturedReviewsByHotel('', this)" 
+                  class="featured-chip active px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm bg-blue-600 text-white flex items-center gap-1.5 flex-shrink-0">
+            <i class="fa-solid fa-star text-amber-300 text-xs"></i> Tất cả khách sạn
+          </button>
+          <button onclick="filterFeaturedReviewsByHotel('2d76c2a1-f312-4934-83ae-a59c0574805f', this)" 
+                  class="featured-chip px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 flex-shrink-0">
+            Rex Sài Gòn
+          </button>
+          <button onclick="filterFeaturedReviewsByHotel('b93a7112-f4dd-41cc-b529-d5d79114078e', this)" 
+                  class="featured-chip px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 flex-shrink-0">
+            Caravelle Sài Gòn
+          </button>
+          <button onclick="filterFeaturedReviewsByHotel('5061bde8-f6f4-4767-9b92-cff82d9ab52b', this)" 
+                  class="featured-chip px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 flex-shrink-0">
+            Sofitel Legend Metropole Hà Nội
+          </button>
+        </div>
+
+        <!-- Lưới thẻ nhận xét nổi bật -->
+        <div id="featuredReviewsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Rendered dynamically via guest.js -->
+        </div>
+
+        <!-- Call-to-Action Banner cuối mục review -->
+        <div class="mt-8 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl border border-slate-800">
+          <div class="space-y-1 text-center sm:text-left">
+            <div class="inline-flex items-center gap-1.5 text-amber-400 text-xs font-extrabold uppercase tracking-wider">
+              <i class="fa-solid fa-gift"></i> Đặc quyền tri ân thành viên
+            </div>
+            <h3 class="text-xl font-bold">Bạn vừa hoàn thành chuyến đi cùng AstraStay?</h3>
+            <p class="text-xs text-slate-300 max-w-xl">
+              Hãy gửi đánh giá trải nghiệm để nhận ngay mã ưu đãi <span class="text-amber-400 font-bold">giảm 10%</span> cho chuyến nghỉ dưỡng tiếp theo.
+            </p>
+          </div>
+          <button onclick="switchGuestTab('tab-lookup')" 
+                  class="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition-all transform hover:scale-105 flex items-center gap-2 flex-shrink-0">
+            <i class="fa-solid fa-pen-to-square"></i> Viết đánh giá ngay
+          </button>
+        </div>
+
       </div>
 
     </section>
@@ -280,11 +425,16 @@
   <!-- MODAL: XEM PHÒNG KHÁCH SẠN                                           -->
   <!-- ===================================================================== -->
   <div id="hotelRoomsModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-fadeIn">
+    <div class="bg-white rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-fadeIn">
       
-      <div class="p-6 bg-slate-900 text-white flex items-start justify-between border-b border-slate-800">
+      <div class="p-5 sm:p-6 bg-slate-900 text-white flex items-start justify-between border-b border-slate-800">
         <div>
-          <h3 id="modalHotelName" class="text-xl font-bold">Chi Tiết Khách Sạn</h3>
+          <div class="flex items-center gap-2">
+            <h3 id="modalHotelName" class="text-xl font-bold">Chi Tiết Khách Sạn</h3>
+            <span id="modalHotelRatingBadge" class="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1">
+              ⭐ <span id="modalHotelAvgScore">5.0</span> (<span id="modalHotelReviewCount">0</span> đánh giá)
+            </span>
+          </div>
           <p id="modalHotelDesc" class="text-xs text-slate-400 mt-1">Địa chỉ khách sạn</p>
         </div>
         <button onclick="closeGuestHotelRoomsModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition-colors">
@@ -292,13 +442,418 @@
         </button>
       </div>
 
-      <div class="p-6 overflow-y-auto flex-1 space-y-4" id="modalRoomsContainer">
-        <!-- Rendered dynamically -->
+      <!-- TABS CHUYỂN ĐỔI: PHÒNG NGHỈ vs ĐÁNH GIÁ CỦA KHÁCH HÀNG -->
+      <div class="flex border-b border-slate-200 bg-white px-6">
+        <button id="modalTabRoomsBtn" onclick="switchHotelModalTab('rooms')" 
+                class="py-3 px-4 text-xs font-bold border-b-2 border-blue-600 text-blue-600 flex items-center gap-2 transition-all cursor-pointer">
+          <i class="fa-solid fa-bed"></i> Danh Sách Phòng Trống
+        </button>
+        <button id="modalTabReviewsBtn" onclick="switchHotelModalTab('reviews')" 
+                class="py-3 px-4 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-2 transition-all cursor-pointer">
+          <i class="fa-solid fa-star text-amber-500"></i> Đánh Giá Của Khách Hàng 
+          <span id="modalTabReviewCountBadge" class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-extrabold">-</span>
+        </button>
       </div>
 
-      <div class="p-4 bg-slate-50 border-t border-slate-100 text-right">
-        <button onclick="closeGuestHotelRoomsModal()" class="px-5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-xs rounded-xl transition-colors">
+      <!-- PHÂN HỆ 1: DANH SÁCH PHÒNG VÀ GIÁ -->
+      <div id="hotelModalRoomsSection" class="flex flex-col flex-1 overflow-hidden">
+        <!-- BỘ LỌC NGÀY, GIÁ VÀ RATING TRONG MODAL PHÒNG -->
+        <div class="bg-slate-50 border-b border-slate-200 p-4">
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+            <div class="sm:col-span-3">
+              <label class="block text-[11px] font-bold text-slate-500 mb-1">
+                <i class="fa-regular fa-calendar-check text-blue-500 mr-1"></i> Nhận phòng
+              </label>
+              <input type="date" id="modalFilterCheckIn" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="sm:col-span-3">
+              <label class="block text-[11px] font-bold text-slate-500 mb-1">
+                <i class="fa-regular fa-calendar-xmark text-amber-500 mr-1"></i> Trả phòng
+              </label>
+              <input type="date" id="modalFilterCheckOut" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-[11px] font-bold text-slate-500 mb-1">
+                <i class="fa-solid fa-money-bill-wave text-emerald-500 mr-1"></i> Giá tối đa
+              </label>
+              <select id="modalFilterMaxPrice" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">Tất cả giá</option>
+                <option value="1000000">&le; 1.000.000 đ</option>
+                <option value="2000000">&le; 2.000.000 đ</option>
+                <option value="4000000">&le; 4.000.000 đ</option>
+              </select>
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-[11px] font-bold text-slate-500 mb-1">
+                <i class="fa-solid fa-star text-amber-400 mr-1"></i> Đánh giá
+              </label>
+              <select id="modalFilterMinRating" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">Tất cả sao</option>
+                <option value="3.0">&ge; 3.0 ⭐</option>
+                <option value="4.0">&ge; 4.0 ⭐</option>
+                <option value="4.5">&ge; 4.5 ⭐</option>
+              </select>
+            </div>
+            <div class="sm:col-span-2">
+              <button onclick="applyRoomFilters()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer">
+                <i class="fa-solid fa-filter"></i> Lọc phòng
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-6 overflow-y-auto flex-1 space-y-4" id="modalRoomsContainer">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- PHÂN HỆ 2: ĐÁNH GIÁ CỦA KHÁCH HÀNG (REVIEW & RATING MODULE) -->
+      <div id="hotelModalReviewsSection" class="hidden flex-1 overflow-y-auto p-6 space-y-6">
+        
+        <!-- KHỐI TỔNG QUAN: ĐIỂM TRUNG BÌNH & THANH PHÂN BỐ SAO -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 bg-slate-50 p-6 rounded-3xl border border-slate-200">
+          
+          <!-- Điểm tổng kết -->
+          <div class="md:col-span-5 flex flex-col justify-center items-center text-center border-b md:border-b-0 md:border-r border-slate-200 pb-4 md:pb-0 md:pr-6">
+            <div class="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight flex items-baseline gap-1">
+              <span id="overviewAvgRating">4.8</span>
+              <span class="text-base text-slate-400 font-semibold">/ 5</span>
+            </div>
+            <div class="flex text-amber-400 text-lg my-2" id="overviewStarsContainer">
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star-half-stroke"></i>
+            </div>
+            <div class="text-xs font-bold text-slate-700" id="overviewTotalReviews">Dựa trên 85 đánh giá thật</div>
+            <div class="mt-3 verified-stay-badge">
+              <i class="fa-solid fa-circle-check text-emerald-500"></i> 100% Khách hàng đã lưu trú thật
+            </div>
+          </div>
+
+          <!-- Thanh phân bố 5 sao -> 1 sao -->
+          <div class="md:col-span-7 flex flex-col justify-center space-y-2" id="starDistributionBarsContainer">
+            <!-- 5 Sao -->
+            <div class="rating-dist-row">
+              <span class="w-12 font-bold text-slate-700">5 sao</span>
+              <div class="rating-dist-bar">
+                <div class="rating-dist-fill" id="barFill5" style="width: 88%;"></div>
+              </div>
+              <span class="w-16 text-right text-slate-500 font-semibold" id="barText5">88% (75)</span>
+            </div>
+            <!-- 4 Sao -->
+            <div class="rating-dist-row">
+              <span class="w-12 font-bold text-slate-700">4 sao</span>
+              <div class="rating-dist-bar">
+                <div class="rating-dist-fill" id="barFill4" style="width: 8%;"></div>
+              </div>
+              <span class="w-16 text-right text-slate-500 font-semibold" id="barText4">8% (7)</span>
+            </div>
+            <!-- 3 Sao -->
+            <div class="rating-dist-row">
+              <span class="w-12 font-bold text-slate-700">3 sao</span>
+              <div class="rating-dist-bar">
+                <div class="rating-dist-fill" id="barFill3" style="width: 2%;"></div>
+              </div>
+              <span class="w-16 text-right text-slate-500 font-semibold" id="barText3">2% (2)</span>
+            </div>
+            <!-- 2 Sao -->
+            <div class="rating-dist-row">
+              <span class="w-12 font-bold text-slate-700">2 sao</span>
+              <div class="rating-dist-bar">
+                <div class="rating-dist-fill" id="barFill2" style="width: 1%;"></div>
+              </div>
+              <span class="w-16 text-right text-slate-500 font-semibold" id="barText2">1% (1)</span>
+            </div>
+            <!-- 1 Sao -->
+            <div class="rating-dist-row">
+              <span class="w-12 font-bold text-slate-700">1 sao</span>
+              <div class="rating-dist-bar">
+                <div class="rating-dist-fill" id="barFill1" style="width: 0%;"></div>
+              </div>
+              <span class="w-16 text-right text-slate-500 font-semibold" id="barText1">0% (0)</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- BỘ LỌC SAO & SẮP XẾP ĐÁNH GIÁ -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+          <!-- Filter chips theo sao -->
+          <div class="flex items-center gap-1.5 overflow-x-auto pb-1" id="reviewStarFilterChips">
+            <button onclick="filterHotelReviewsByStar('ALL', this)" class="filter-chip-btn active">Tất cả</button>
+            <button onclick="filterHotelReviewsByStar(5, this)" class="filter-chip-btn">5 ★</button>
+            <button onclick="filterHotelReviewsByStar(4, this)" class="filter-chip-btn">4 ★</button>
+            <button onclick="filterHotelReviewsByStar(3, this)" class="filter-chip-btn">3 ★</button>
+            <button onclick="filterHotelReviewsByStar(2, this)" class="filter-chip-btn">2 ★</button>
+            <button onclick="filterHotelReviewsByStar(1, this)" class="filter-chip-btn">1 ★</button>
+          </div>
+
+          <!-- Sắp xếp -->
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-400 font-medium">Sắp xếp:</span>
+            <select id="reviewSortSelect" onchange="changeHotelReviewSort(this.value)" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+              <option value="newest" selected>Mới nhất</option>
+              <option value="oldest">Cũ nhất</option>
+              <option value="highest">Điểm cao nhất</option>
+              <option value="lowest">Điểm thấp nhất</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- DANH SÁCH REVIEW KHÁCH SẠN -->
+        <div id="hotelReviewsListContainer" class="space-y-4">
+          <!-- Rendered dynamically -->
+        </div>
+
+      </div>
+
+      <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+        <div class="text-xs text-slate-500">
+          <i class="fa-solid fa-shield-halved text-emerald-600 mr-1"></i> Đánh giá được bảo vệ bởi cơ chế chống trùng lặp NoSQL
+        </div>
+        <button onclick="closeGuestHotelRoomsModal()" class="px-5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-xs rounded-xl transition-colors cursor-pointer">
           Đóng
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: FORM VIẾT & SỬA ĐÁNH GIÁ (HOTEL REVIEW FORM MODAL)             -->
+  <!-- ===================================================================== -->
+  <div id="hotelReviewFormModal" class="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden animate-fadeIn">
+      
+      <div class="p-5 bg-gradient-to-r from-slate-900 to-blue-950 text-white flex items-center justify-between">
+        <div>
+          <h3 id="hrFormTitle" class="text-lg font-bold">Viết Đánh Giá Khách Sạn</h3>
+          <p id="hrFormSubtitle" class="text-xs text-slate-300 mt-0.5">Chia sẻ trải nghiệm lưu trú chân thực của bạn</p>
+        </div>
+        <button onclick="closeHotelReviewFormModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-slate-200 flex items-center justify-center transition-colors cursor-pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="hotelReviewForm" onsubmit="handleHotelReviewSubmit(event)" class="p-6 space-y-4">
+        
+        <!-- Khối thông tin khách sạn & kỳ nghỉ -->
+        <div class="p-3.5 bg-blue-50/70 border border-blue-100 rounded-2xl flex items-center justify-between text-xs">
+          <div>
+            <div class="font-extrabold text-blue-900" id="hrHotelName">Khách sạn Rex Sài Gòn</div>
+            <div class="text-slate-500 mt-0.5" id="hrStayInfo">Phòng 204 • 10/03/2026 - 12/03/2026</div>
+          </div>
+          <span class="verified-stay-badge">
+            <i class="fa-solid fa-certificate text-amber-500"></i> Đã lưu trú
+          </span>
+        </div>
+
+        <input type="hidden" id="hrReviewId" value="">
+        <input type="hidden" id="hrBookingId" value="">
+        <input type="hidden" id="hrHotelId" value="">
+        <input type="hidden" id="hrRatingValue" value="5">
+
+        <!-- Chọn số sao 1 - 5 với hover effect -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">
+            Điểm đánh giá của bạn <span class="text-red-500">*</span>
+          </label>
+          <div class="flex items-center gap-3">
+            <div class="star-rating-interactive" id="starInteractiveContainer">
+              <i class="fa-solid fa-star star-icon active" data-rating="1" onclick="setInteractiveRating(1)" onmouseenter="hoverInteractiveRating(1)" onmouseleave="resetInteractiveHover()"></i>
+              <i class="fa-solid fa-star star-icon active" data-rating="2" onclick="setInteractiveRating(2)" onmouseenter="hoverInteractiveRating(2)" onmouseleave="resetInteractiveHover()"></i>
+              <i class="fa-solid fa-star star-icon active" data-rating="3" onclick="setInteractiveRating(3)" onmouseenter="hoverInteractiveRating(3)" onmouseleave="resetInteractiveHover()"></i>
+              <i class="fa-solid fa-star star-icon active" data-rating="4" onclick="setInteractiveRating(4)" onmouseenter="hoverInteractiveRating(4)" onmouseleave="resetInteractiveHover()"></i>
+              <i class="fa-solid fa-star star-icon active" data-rating="5" onclick="setInteractiveRating(5)" onmouseenter="hoverInteractiveRating(5)" onmouseleave="resetInteractiveHover()"></i>
+            </div>
+            <span id="starRatingLabelText" class="text-xs font-extrabold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
+              5 sao - Xuất sắc
+            </span>
+          </div>
+        </div>
+
+        <!-- Nhận xét chi tiết -->
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="block text-xs font-bold text-slate-700">
+              Nhận xét chi tiết <span class="text-red-500">*</span>
+            </label>
+            <span class="text-[11px] text-slate-400" id="commentCharCountText">0/2000 ký tự (Tối thiểu 10)</span>
+          </div>
+          <textarea id="hrCommentInput" required rows="4" maxlength="2000"
+                    oninput="handleCommentCharCount(this)"
+                    placeholder="Hãy chia sẻ trải nghiệm của bạn về phòng ốc, phong cách phục vụ, sự sạch sẽ, ẩm thực buffet và vị trí khách sạn..."
+                    class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 leading-relaxed"></textarea>
+        </div>
+
+        <!-- Hộp thông báo lỗi / thành công -->
+        <div id="hrModalAlert" class="hidden p-3 rounded-xl text-xs font-semibold"></div>
+
+        <!-- Nút thao tác -->
+        <div class="pt-2 flex items-center justify-between gap-2 border-t border-slate-100">
+          <button type="button" id="btnDeleteOwnReview" onclick="handleDeleteOwnReview()" 
+                  class="hidden px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs rounded-xl transition-colors cursor-pointer flex items-center gap-1.5">
+            <i class="fa-solid fa-trash-can"></i> Xóa đánh giá
+          </button>
+          
+          <div class="flex items-center gap-2 ml-auto">
+            <button type="button" onclick="closeHotelReviewFormModal()" 
+                    class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-colors cursor-pointer">
+              Hủy
+            </button>
+            <button type="submit" id="btnSubmitHotelReview"
+                    class="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs rounded-xl transition-all shadow-md flex items-center gap-1.5 cursor-pointer">
+              <i class="fa-solid fa-paper-plane"></i> Gửi đánh giá
+            </button>
+          </div>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: CHI TIẾT PHÒNG & ĐÁNH GIÁ (ROOM DETAILS & REVIEWS)             -->
+  <!-- ===================================================================== -->
+  <div id="roomDetailModal" class="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-3xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-fadeIn">
+      
+      <div class="p-5 bg-gradient-to-r from-slate-900 to-blue-950 text-white flex items-center justify-between border-b border-slate-800">
+        <div>
+          <div class="flex items-center gap-2">
+            <span id="rdRoomNumberBadge" class="px-2.5 py-0.5 bg-blue-600 text-white font-extrabold text-xs rounded-lg">Phòng 101</span>
+            <h3 id="rdRoomTypeTitle" class="text-lg font-bold">Standard King</h3>
+          </div>
+          <p id="rdHotelNameSub" class="text-xs text-slate-300 mt-1">Khách sạn Rex Sài Gòn</p>
+        </div>
+        <button onclick="closeRoomDetailModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-slate-200 flex items-center justify-center transition-colors">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto flex-1 space-y-6">
+        
+        <!-- THÔNG TIN TỔNG QUAN VÀ GIÁ -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="md:col-span-2 bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2">
+            <div class="text-xs font-bold text-slate-500 uppercase">Thông số phòng:</div>
+            <div class="grid grid-cols-3 gap-2 text-xs text-slate-700">
+              <div><i class="fa-solid fa-expand text-blue-500 mr-1"></i> Diện tích: <strong id="rdSize">35 m²</strong></div>
+              <div><i class="fa-solid fa-bed text-indigo-500 mr-1"></i> Giường: <strong id="rdBeds">1 Giường King</strong></div>
+              <div><i class="fa-solid fa-users text-amber-500 mr-1"></i> Sức chứa: <strong id="rdCapacity">2 Khách</strong></div>
+            </div>
+            <div class="pt-2 border-t border-slate-200 text-xs">
+              <span class="text-slate-500 font-semibold">Tiện ích: </span>
+              <span id="rdAmenities" class="text-slate-700">Wi-Fi cáp quang, Điều hòa 2 chiều, Buffet sáng 5 sao, Bồn tắm Jacuzzi</span>
+            </div>
+          </div>
+
+          <!-- Rating Box -->
+          <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200 text-center flex flex-col justify-center">
+            <div class="text-3xl font-black text-amber-600 flex items-center justify-center gap-1">
+              <span id="rdAvgRating">4.7</span>
+              <i class="fa-solid fa-star text-2xl text-amber-500"></i>
+            </div>
+            <div class="text-xs text-slate-600 font-semibold mt-1" id="rdReviewCount">125 đánh giá</div>
+            <div class="text-[10px] text-amber-700 mt-1 font-mono">Precomputed Summary O(1)</div>
+          </div>
+        </div>
+
+        <!-- BẢNG GIÁ THEO TỪNG ĐÊM LƯU TRÚ -->
+        <div class="bg-blue-50/60 p-4 rounded-2xl border border-blue-100">
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-xs font-bold text-blue-900 uppercase flex items-center gap-1.5">
+              <i class="fa-solid fa-calendar-days text-blue-600"></i> Biểu giá chi tiết theo ngày lưu trú
+            </h4>
+            <span id="rdStayRangeText" class="text-xs font-semibold text-blue-700">10/03/2026 &rarr; 15/03/2026 (5 đêm)</span>
+          </div>
+          <div id="rdDailyPricesContainer" class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+            <!-- Rendered dynamically -->
+          </div>
+          <div class="mt-3 pt-2 border-t border-blue-200 flex justify-between items-center text-sm">
+            <span class="font-bold text-slate-700">Tổng chi phí kỳ nghỉ:</span>
+            <span id="rdTotalPriceText" class="font-black text-blue-600 text-base">5.150.000 đ</span>
+          </div>
+        </div>
+
+        <!-- DANH SÁCH ĐÁNH GIÁ CỦA KHÁCH HÀNG -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="text-sm font-extrabold text-slate-900 flex items-center gap-1.5">
+              <i class="fa-solid fa-comments text-blue-600"></i> Nhận xét từ khách hàng
+            </h4>
+            <span class="text-xs text-slate-400 font-mono">Mới nhất xếp trước (review_date DESC)</span>
+          </div>
+          <div id="rdReviewsListContainer" class="space-y-3">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- FORM GỬI ĐÁNH GIÁ CỦA KHÁCH HÀNG -->
+        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+          <h4 class="text-sm font-extrabold text-slate-900 mb-1 flex items-center gap-1.5">
+            <i class="fa-solid fa-pen-to-square text-amber-500"></i> Gửi đánh giá của bạn
+          </h4>
+          <p class="text-xs text-slate-500 mb-4">
+            Đánh giá phòng chỉ áp dụng cho khách hàng đã từng hoàn thành kỳ nghỉ (Check-out) với mã xác nhận đặt phòng hợp lệ.
+          </p>
+
+          <form id="reviewSubmitForm" onsubmit="handleReviewSubmit(event)" class="space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">Mã xác nhận đặt phòng (confirm_number) *</label>
+                <input type="text" id="rfConfirmNumber" required placeholder="Ví dụ: 16380824 hoặc 44556677"
+                       class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">Mã khách hàng (guest_id) *</label>
+                <input type="text" id="rfGuestId" required placeholder="Ví dụ: c262832f-... hoặc GUEST001"
+                       class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">Đánh giá của bạn *</label>
+              <div class="flex items-center gap-2">
+                <input type="hidden" id="rfRating" value="5">
+                <div id="starButtonsContainer" class="flex gap-1.5">
+                  <button type="button" onclick="setRatingScore(1)" class="star-btn w-9 h-9 rounded-xl border border-slate-200 bg-white hover:bg-amber-50 text-amber-500 font-bold text-xs">1 ★</button>
+                  <button type="button" onclick="setRatingScore(2)" class="star-btn w-9 h-9 rounded-xl border border-slate-200 bg-white hover:bg-amber-50 text-amber-500 font-bold text-xs">2 ★</button>
+                  <button type="button" onclick="setRatingScore(3)" class="star-btn w-9 h-9 rounded-xl border border-slate-200 bg-white hover:bg-amber-50 text-amber-500 font-bold text-xs">3 ★</button>
+                  <button type="button" onclick="setRatingScore(4)" class="star-btn w-9 h-9 rounded-xl border border-slate-200 bg-white hover:bg-amber-50 text-amber-500 font-bold text-xs">4 ★</button>
+                  <button type="button" onclick="setRatingScore(5)" class="star-btn w-9 h-9 rounded-xl border border-amber-400 bg-amber-500 text-white font-bold text-xs">5 ★</button>
+                </div>
+                <span id="ratingScoreLabel" class="text-xs font-bold text-amber-600 ml-2">5 sao - Xuất sắc</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">Nhận xét chi tiết *</label>
+              <textarea id="rfComment" required rows="3" placeholder="Chia sẻ trải nghiệm của bạn về căn phòng, tiện nghi, dịch vụ và view..."
+                        class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+
+            <div id="reviewAlertBox" class="hidden p-3 rounded-xl text-xs font-semibold"></div>
+
+            <div class="flex justify-end gap-2 pt-1">
+              <button type="submit" id="btnSubmitReview" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-xl transition-all shadow-md flex items-center gap-1.5">
+                <i class="fa-solid fa-paper-plane"></i> Gửi đánh giá
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+
+      <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+        <button onclick="closeRoomDetailModal()" class="px-5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-xs rounded-xl transition-colors">
+          Đóng
+        </button>
+        <button id="btnBookFromDetail" onclick="bookFromDetailModal()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition-all shadow-md flex items-center gap-1.5">
+          <i class="fa-solid fa-check"></i> Đặt phòng này
         </button>
       </div>
 

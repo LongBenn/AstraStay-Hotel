@@ -46,10 +46,14 @@ const schemaStatements = [
     hotel_id text,
     start_date date,
     room_number int,
-    is_available int,
     room_id text,
+    room_type text,
+    price decimal,
+    is_available int,
+    average_rating decimal,
+    review_count int,
     PRIMARY KEY (hotel_id, start_date, room_number)
-  );`,
+  ) WITH CLUSTERING ORDER BY (start_date ASC, room_number ASC);`,
 
   // 6. amenities_by_room
   `CREATE TABLE IF NOT EXISTS amenities_by_room (
@@ -124,6 +128,135 @@ const schemaStatements = [
     phone_numbers text,
     addresses text,
     PRIMARY KEY (guest_id)
+  );`,
+
+  // 12. reviews_by_room
+  `CREATE TABLE IF NOT EXISTS reviews_by_room (
+    hotel_id text,
+    room_id text,
+    review_date timestamp,
+    review_id uuid,
+    guest_id text,
+    confirm_number int,
+    rating int,
+    comment text,
+    PRIMARY KEY ((hotel_id, room_id), review_date, review_id)
+  ) WITH CLUSTERING ORDER BY (review_date DESC, review_id ASC);`,
+
+  // 13. room_rating_summary
+  `CREATE TABLE IF NOT EXISTS room_rating_summary (
+    hotel_id text,
+    room_id text,
+    average_rating decimal,
+    review_count int,
+    rating_sum int,
+    PRIMARY KEY ((hotel_id, room_id))
+  );`,
+
+  // 14. rooms_by_hotel_rating
+  `CREATE TABLE IF NOT EXISTS rooms_by_hotel_rating (
+    hotel_id text,
+    average_rating decimal,
+    room_id text,
+    room_number int,
+    room_type text,
+    review_count int,
+    price_per_night decimal,
+    PRIMARY KEY (hotel_id, average_rating, room_id)
+  ) WITH CLUSTERING ORDER BY (average_rating DESC, room_id ASC);`,
+
+  // 15. reviews_by_confirmation
+  `CREATE TABLE IF NOT EXISTS reviews_by_confirmation (
+    confirm_number int,
+    review_id uuid,
+    hotel_id text,
+    room_id text,
+    guest_id text,
+    rating int,
+    review_date timestamp,
+    PRIMARY KEY (confirm_number)
+  );`,
+
+  // 16. featured_reviews
+  `CREATE TABLE IF NOT EXISTS featured_reviews (
+    hotel_id text,
+    rating int,
+    review_id uuid,
+    guest_id text,
+    guest_name text,
+    guest_avatar text,
+    hotel_name text,
+    room_id text,
+    room_number int,
+    room_type text,
+    comment text,
+    review_date timestamp,
+    is_featured boolean,
+    helpful_count int,
+    stay_date text,
+    badge_title text,
+    PRIMARY KEY (hotel_id, rating, review_id)
+  ) WITH CLUSTERING ORDER BY (rating DESC, review_id ASC);`,
+
+  // 17. hotel_reviews
+  `CREATE TABLE IF NOT EXISTS hotel_reviews (
+    hotel_id text,
+    review_id uuid,
+    user_id text,
+    user_name text,
+    user_avatar text,
+    booking_id text,
+    confirm_number int,
+    room_number int,
+    room_type text,
+    rating int,
+    comment text,
+    status text,
+    is_verified_stay boolean,
+    stay_date text,
+    created_at timestamp,
+    updated_at timestamp,
+    PRIMARY KEY (hotel_id, review_id)
+  );`,
+
+  // 18. hotel_reviews_by_id
+  `CREATE TABLE IF NOT EXISTS hotel_reviews_by_id (
+    review_id uuid,
+    hotel_id text,
+    user_id text,
+    booking_id text,
+    confirm_number int,
+    rating int,
+    comment text,
+    status text,
+    created_at timestamp,
+    updated_at timestamp,
+    PRIMARY KEY (review_id)
+  );`,
+
+  // 19. reviews_by_booking
+  `CREATE TABLE IF NOT EXISTS reviews_by_booking (
+    booking_id text,
+    review_id uuid,
+    hotel_id text,
+    user_id text,
+    rating int,
+    created_at timestamp,
+    PRIMARY KEY (booking_id)
+  );`,
+
+  // 20. hotel_rating_summary
+  `CREATE TABLE IF NOT EXISTS hotel_rating_summary (
+    hotel_id text,
+    average_rating decimal,
+    review_count int,
+    rating_sum int,
+    count_1_star int,
+    count_2_star int,
+    count_3_star int,
+    count_4_star int,
+    count_5_star int,
+    PRIMARY KEY (hotel_id)
   );`
 ];
 

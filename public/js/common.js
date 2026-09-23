@@ -8,6 +8,20 @@ function getSafeHotelImageUrl(imageUrl) {
     : HOTEL_PLACEHOLDER_IMAGE;
 }
 
+function getHotelGalleryImages(hotel) {
+  const imageFields = [hotel?.images, hotel?.image_urls, hotel?.photos, hotel?.gallery];
+  const images = imageFields.find(value => Array.isArray(value) && value.length)
+    || imageFields.find(value => typeof value === 'string' && value.trim())
+    || hotel?.imageUrl
+    || hotel?.thumbnail
+    || hotel?.image_url;
+  const normalizedImages = Array.isArray(images) ? images : [images];
+  const validImages = normalizedImages.filter(image => typeof image === 'string' && image.trim());
+  const primaryImage = validImages[0] || HOTEL_PLACEHOLDER_IMAGE;
+
+  return Array.from({ length: 4 }, (_, index) => getSafeHotelImageUrl(validImages[index] || primaryImage));
+}
+
 function hotelImageErrorHandler(imageElement) {
   imageElement.onerror = null;
   imageElement.src = HOTEL_PLACEHOLDER_IMAGE;

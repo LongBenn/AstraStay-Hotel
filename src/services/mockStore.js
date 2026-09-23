@@ -295,10 +295,10 @@ const pois_by_hotel = [
 // 4. DANH SÁCH PHÒNG THEO KHÁCH SẠN (rooms_by_hotel - Q2, 50 phòng)
 const rooms_by_hotel = [
   // Rex Hotel Sài Gòn (5 phòng)
-  { hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f', room_number: 101, room_id: 'CH-101', room_type: 'Standard Deluxe', price_per_night: 1500000, status: 'AVAILABLE' },
+  { hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f', room_number: 101, room_id: 'CH-101', room_type: 'Standard King', price_per_night: 950000, status: 'AVAILABLE' },
   { hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f', room_number: 102, room_id: 'CH-102', room_type: 'Executive Heritage', price_per_night: 2200000, status: 'OCCUPIED' },
   { hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f', room_number: 201, room_id: 'CH-201', room_type: 'Junior Suite', price_per_night: 3800000, status: 'AVAILABLE' },
-  { hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f', room_number: 202, room_id: 'CH-234', room_type: 'Rex Suite City View', price_per_night: 1800000, status: 'AVAILABLE' },
+  { hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f', room_number: 204, room_id: 'CH-234', room_type: 'Executive Suite', price_per_night: 1800000, status: 'AVAILABLE' },
   { hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f', room_number: 301, room_id: 'CH-301', room_type: 'Presidential Suite', price_per_night: 7500000, status: 'MAINTENANCE' },
 
   // Caravelle Hotel (5 phòng)
@@ -510,18 +510,33 @@ let bookings_by_guest = [
     guest_id: '0eacb0ae-a973-4bfd-9818-9a927b713cf4',
     check_in_date: '2026-03-10',
     booking_id: '16380824-0000-0000-0000-000000000001',
+    confirm_number: 16380824,
     hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f',
     hotel_name: 'Khách sạn Rex Sài Gòn',
-    room_number: 202,
+    room_number: 204,
     room_id: 'CH-234',
     check_out_date: '2026-03-12',
     total_amount: 3600000,
-    status: 'CONFIRMED'
+    status: 'CHECKED_OUT'
+  },
+  {
+    guest_id: 'c262832f-6f09-4a4a-8e92-447304fcebd8',
+    check_in_date: '2026-03-01',
+    booking_id: '44556677-0000-0000-0000-000000000004',
+    confirm_number: 44556677,
+    hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f',
+    hotel_name: 'Khách sạn Rex Sài Gòn',
+    room_number: 204,
+    room_id: 'CH-234',
+    check_out_date: '2026-03-05',
+    total_amount: 7200000,
+    status: 'CHECKED_OUT'
   },
   {
     guest_id: 'c262832f-6f09-4a4a-8e92-447304fcebd8',
     check_in_date: '2026-03-10',
     booking_id: '39102845-0000-0000-0000-000000000002',
+    confirm_number: 39102845,
     hotel_id: 'b93a7112-f4dd-41cc-b529-d5d79114078e',
     hotel_name: 'Khách sạn Caravelle Sài Gòn',
     room_number: 201,
@@ -534,6 +549,7 @@ let bookings_by_guest = [
     guest_id: 'c262832f-6f09-4a4a-8e92-447304fcebd8',
     check_in_date: '2026-10-10',
     booking_id: '28471920-0000-0000-0000-000000000003',
+    confirm_number: 28471920,
     hotel_id: '5061bde8-f6f4-4767-9b92-cff82d9ab52b',
     hotel_name: 'Khách sạn Sofitel Legend Metropole Hà Nội',
     room_number: 101,
@@ -1008,6 +1024,550 @@ let invoices_by_booking = [
   }
 ];
 
+// 11. PHÒNG TRỐNG & GIÁ THEO NGÀY (available_rooms_by_hotel_date - Bước 2)
+const available_rooms_by_hotel_date = [];
+
+// Sinh dữ liệu khả dụng và giá theo ngày cho toàn bộ tháng 3 và 4 năm 2026
+const startDateObj = new Date('2026-03-01');
+const endDateObj = new Date('2026-04-30');
+
+for (let d = new Date(startDateObj); d <= endDateObj; d.setDate(d.getDate() + 1)) {
+  const dateStr = d.toISOString().split('T')[0];
+  const dayOfWeek = d.getDay();
+  const isWeekend = (dayOfWeek === 5 || dayOfWeek === 6); // Thứ 6 & Thứ 7 tính giá cuối tuần
+
+  // 1. Rex Hotel Sài Gòn (2d76c2a1-f312-4934-83ae-a59c0574805f)
+  // Room 101 - Standard King (Còn phòng liên tục, giá 950k ngày thường, 1150k cuối tuần, rating 4.6)
+  available_rooms_by_hotel_date.push({
+    hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f',
+    start_date: dateStr,
+    room_number: 101,
+    room_id: 'CH-101',
+    room_type: 'Standard King',
+    price: isWeekend ? 1150000 : 950000,
+    is_available: 1,
+    average_rating: 4.6,
+    review_count: 120,
+    is_weekend: isWeekend
+  });
+
+  // Room 204 - Executive Suite (Còn phòng liên tục, giá 1.800k ngày thường, 2.200k cuối tuần, rating 4.9)
+  available_rooms_by_hotel_date.push({
+    hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f',
+    start_date: dateStr,
+    room_number: 204,
+    room_id: 'CH-234',
+    room_type: 'Executive Suite',
+    price: isWeekend ? 2200000 : 1800000,
+    is_available: 1,
+    average_rating: 4.9,
+    review_count: 85,
+    is_weekend: isWeekend
+  });
+
+  // Room 201 - Junior Suite (Bị booked ngày 2026-03-12, các ngày khác trống để test lọc phòng trùng)
+  available_rooms_by_hotel_date.push({
+    hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f',
+    start_date: dateStr,
+    room_number: 201,
+    room_id: 'CH-201',
+    room_type: 'Junior Suite',
+    price: isWeekend ? 4200000 : 3800000,
+    is_available: dateStr === '2026-03-12' ? 0 : 1, // Kẹt ngày 12/03
+    average_rating: 4.7,
+    review_count: 45,
+    is_weekend: isWeekend
+  });
+
+  // Room 102 - Executive Heritage (Đang bảo trì/bận từ 09/03 - 14/03, rating 3.9)
+  available_rooms_by_hotel_date.push({
+    hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f',
+    start_date: dateStr,
+    room_number: 102,
+    room_id: 'CH-102',
+    room_type: 'Executive Heritage',
+    price: isWeekend ? 2600000 : 2200000,
+    is_available: (dateStr >= '2026-03-09' && dateStr <= '2026-03-14') ? 0 : 1,
+    average_rating: 3.9,
+    review_count: 15,
+    is_weekend: isWeekend
+  });
+
+  // Room 301 - Presidential Suite (Bảo trì dài hạn)
+  available_rooms_by_hotel_date.push({
+    hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f',
+    start_date: dateStr,
+    room_number: 301,
+    room_id: 'CH-301',
+    room_type: 'Presidential Suite',
+    price: 7500000,
+    is_available: 0,
+    average_rating: 4.8,
+    review_count: 18,
+    is_weekend: isWeekend
+  });
+
+  // 2. Caravelle Hotel (b93a7112-f4dd-41cc-b529-d5d79114078e)
+  available_rooms_by_hotel_date.push({
+    hotel_id: 'b93a7112-f4dd-41cc-b529-d5d79114078e',
+    start_date: dateStr,
+    room_number: 101,
+    room_id: 'CV-101',
+    room_type: 'Deluxe City View',
+    price: isWeekend ? 2100000 : 1800000,
+    is_available: 1,
+    average_rating: 4.7,
+    review_count: 50,
+    is_weekend: isWeekend
+  });
+  available_rooms_by_hotel_date.push({
+    hotel_id: 'b93a7112-f4dd-41cc-b529-d5d79114078e',
+    start_date: dateStr,
+    room_number: 201,
+    room_id: 'kdefgt',
+    room_type: 'Signature Suite',
+    price: isWeekend ? 4600000 : 4200000,
+    is_available: 1,
+    average_rating: 4.9,
+    review_count: 95,
+    is_weekend: isWeekend
+  });
+
+  // 3. Metropole Hà Nội (5061bde8-f6f4-4767-9b92-cff82d9ab52b)
+  available_rooms_by_hotel_date.push({
+    hotel_id: '5061bde8-f6f4-4767-9b92-cff82d9ab52b',
+    start_date: dateStr,
+    room_number: 101,
+    room_id: '12-CFG',
+    room_type: 'Heritage Deluxe',
+    price: isWeekend ? 3600000 : 3200000,
+    is_available: 1,
+    average_rating: 4.8,
+    review_count: 110,
+    is_weekend: isWeekend
+  });
+}
+
+// 12. DANH SÁCH ĐÁNH GIÁ CỦA PHÒNG (reviews_by_room - Bước 3)
+const reviews_by_room = [
+  {
+    hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f',
+    room_id: 'CH-234',
+    review_date: new Date('2026-03-12T09:30:00Z'),
+    review_id: '11111111-1111-1111-1111-111111111111',
+    guest_id: '0eacb0ae-a973-4bfd-9818-9a927b713cf4',
+    guest_name: 'Trần Thị Mai',
+    confirm_number: 16380824,
+    rating: 5,
+    comment: 'Phòng Executive Suite cực kỳ rộng rãi, bồn sục Jacuzzi view phố đi bộ rất thoáng và đẹp.'
+  },
+  {
+    hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f',
+    room_id: 'CH-234',
+    review_date: new Date('2026-02-16T14:15:00Z'),
+    review_id: '22222222-2222-2222-2222-222222222222',
+    guest_id: 'c262832f-6f09-4a4a-8e92-447304fcebd8',
+    guest_name: 'Nguyễn Văn An',
+    confirm_number: 11029831,
+    rating: 5,
+    comment: 'Dịch vụ chu đáo, giường ngủ êm ái, cách âm tuyệt đối!'
+  },
+  {
+    hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f',
+    room_id: 'CH-234',
+    review_date: new Date('2026-01-20T11:00:00Z'),
+    review_id: '33333333-3333-3333-3333-333333333333',
+    guest_id: 'GUEST003',
+    guest_name: 'Lê Quang Dũng',
+    confirm_number: 11029832,
+    rating: 5,
+    comment: 'Vị trí đắc địa ngay trung tâm Sài Gòn, nhân viên lễ tân hỗ trợ nhiệt tình.'
+  },
+  {
+    hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f',
+    room_id: 'CH-234',
+    review_date: new Date('2025-12-15T16:45:00Z'),
+    review_id: '44444444-4444-4444-4444-444444444444',
+    guest_id: 'GUEST004',
+    guest_name: 'Phạm Thị Hương',
+    confirm_number: 11029833,
+    rating: 4,
+    comment: 'Không gian sang trọng mang nét cổ điển, buffet sáng ngon miệng.'
+  },
+  {
+    hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f',
+    room_id: 'CH-101',
+    review_date: new Date('2026-03-01T10:00:00Z'),
+    review_id: '55555555-5555-5555-5555-555555555555',
+    guest_id: 'GUEST001',
+    guest_name: 'Nguyễn Văn A',
+    confirm_number: 44556688,
+    rating: 5,
+    comment: 'Phòng Standard King giá rất hợp lý ngay trung tâm Quận 1.'
+  },
+  {
+    hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f',
+    room_id: 'CH-101',
+    review_date: new Date('2026-02-20T16:20:00Z'),
+    review_id: '66666666-6666-6666-6666-666666666666',
+    guest_id: 'GUEST002',
+    guest_name: 'Trần Thị B',
+    confirm_number: 55667799,
+    rating: 4,
+    comment: 'Phòng sạch sẽ, tiện nghi đầy đủ, nước nóng ổn định.'
+  },
+  {
+    hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f',
+    room_id: 'CH-101',
+    review_date: new Date('2026-01-10T08:30:00Z'),
+    review_id: '77777777-7777-7777-7777-777777777777',
+    guest_id: 'GUEST005',
+    guest_name: 'Hoàng Minh Tuấn',
+    confirm_number: 66778811,
+    rating: 5,
+    comment: 'Giường êm, gối mềm ngủ rất sâu giấc. Sẽ quay lại khi công tác TP.HCM.'
+  },
+  {
+    hotel_id: 'b93a7112-f4dd-41cc-b529-d5d79114078e',
+    room_id: 'kdefgt',
+    review_date: new Date('2026-03-14T15:00:00Z'),
+    review_id: '88888888-8888-8888-8888-888888888888',
+    guest_id: 'c262832f-6f09-4a4a-8e92-447304fcebd8',
+    guest_name: 'Nguyễn Văn An',
+    confirm_number: 39102845,
+    rating: 5,
+    comment: 'Phòng Signature Suite view sông Sài Gòn tuyệt mỹ, dịch vụ quản gia đỉnh cao.'
+  },
+  {
+    hotel_id: '5061bde8-f6f4-4767-9b92-cff82d9ab52b',
+    room_id: '12-CFG',
+    review_date: new Date('2026-02-10T14:00:00Z'),
+    review_id: '99999999-9999-9999-9999-999999999999',
+    guest_id: 'GUEST006',
+    guest_name: 'Vũ Ngọc Lan',
+    confirm_number: 77889922,
+    rating: 5,
+    comment: 'Kiến trúc Pháp cổ kính lãng mạn, tiệc trà chiều tại Le Club rất tinh tế.'
+  }
+];
+
+// 13. ĐIỂM ĐÁNH GIÁ TRUNG BÌNH VÀ SỐ LƯỢT REVIEW TIỀN TÍNH TOÁN (room_rating_summary - Bước 4)
+const room_rating_summary = [
+  { hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f', room_id: 'CH-234', average_rating: 4.9, review_count: 85, rating_sum: 416 },
+  { hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f', room_id: 'CH-101', average_rating: 4.6, review_count: 120, rating_sum: 552 },
+  { hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f', room_id: 'CH-201', average_rating: 4.7, review_count: 45, rating_sum: 211 },
+  { hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f', room_id: 'CH-301', average_rating: 4.8, review_count: 18, rating_sum: 86 },
+  { hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f', room_id: 'CH-102', average_rating: 3.9, review_count: 15, rating_sum: 58 },
+  { hotel_id: 'b93a7112-f4dd-41cc-b529-d5d79114078e', room_id: 'kdefgt', average_rating: 4.9, review_count: 95, rating_sum: 465 },
+  { hotel_id: 'b93a7112-f4dd-41cc-b529-d5d79114078e', room_id: 'CV-101', average_rating: 4.7, review_count: 50, rating_sum: 235 },
+  { hotel_id: '5061bde8-f6f4-4767-9b92-cff82d9ab52b', room_id: '12-CFG', average_rating: 4.8, review_count: 110, rating_sum: 528 }
+];
+
+// 14. PHÒNG THEO ĐIỂM RATING (rooms_by_hotel_rating - Bước 5)
+const rooms_by_hotel_rating = [
+  { hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f', average_rating: 4.9, room_id: 'CH-234', room_number: 204, room_type: 'Executive Suite', review_count: 85, price_per_night: 1800000 },
+  { hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f', average_rating: 4.8, room_id: 'CH-301', room_number: 301, room_type: 'Presidential Suite', review_count: 18, price_per_night: 7500000 },
+  { hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f', average_rating: 4.7, room_id: 'CH-201', room_number: 201, room_type: 'Junior Suite', review_count: 45, price_per_night: 3800000 },
+  { hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f', average_rating: 4.6, room_id: 'CH-101', room_number: 101, room_type: 'Standard King', review_count: 120, price_per_night: 950000 },
+  { hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f', average_rating: 3.9, room_id: 'CH-102', room_number: 102, room_type: 'Executive Heritage', review_count: 15, price_per_night: 2200000 }
+];
+
+// 15. CHỐNG ĐÁNH GIÁ TRÙNG LẶP THEO CONFIRM_NUMBER (reviews_by_confirmation - Bước 6)
+const reviews_by_confirmation = [
+  {
+    confirm_number: 16380824,
+    review_id: '11111111-1111-1111-1111-111111111111',
+    hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f',
+    room_id: 'CH-234',
+    guest_id: '0eacb0ae-a973-4bfd-9818-9a927b713cf4',
+    rating: 5,
+    review_date: new Date('2026-03-12T09:30:00Z')
+  },
+  {
+    confirm_number: 39102845,
+    review_id: '88888888-8888-8888-8888-888888888888',
+    hotel_id: 'b93a7112-f4dd-41cc-b529-d5d79114078e',
+    room_id: 'kdefgt',
+    guest_id: 'c262832f-6f09-4a4a-8e92-447304fcebd8',
+    rating: 5,
+    review_date: new Date('2026-03-14T15:00:00Z')
+  }
+];
+
+// 16. ĐÁNH GIÁ & BÌNH LUẬN NỔI BẬT (featured_reviews)
+const featured_reviews = [
+  {
+    review_id: '11111111-1111-1111-1111-111111111111',
+    hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f',
+    hotel_name: 'Khách sạn Rex Sài Gòn',
+    room_id: 'CH-234',
+    room_number: 204,
+    room_type: 'Executive Suite',
+    guest_id: '0eacb0ae-a973-4bfd-9818-9a927b713cf4',
+    guest_name: 'Trần Thị Mai',
+    guest_avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80',
+    rating: 5,
+    comment: 'Phòng Executive Suite cực kỳ rộng rãi, bồn sục Jacuzzi ngắm trọn view phố đi bộ Nguyễn Huệ lung linh về đêm. Nhân viên phục vụ rất chu đáo và tinh tế!',
+    review_date: new Date('2026-03-12T09:30:00Z'),
+    is_featured: true,
+    helpful_count: 42,
+    stay_date: 'Kỳ nghỉ 5 đêm - Tháng 03/2026',
+    badge_title: 'Doanh Nhân & Chuyên Gia'
+  },
+  {
+    review_id: '22222222-2222-2222-2222-222222222222',
+    hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f',
+    hotel_name: 'Khách sạn Rex Sài Gòn',
+    room_id: 'CH-234',
+    room_number: 204,
+    room_type: 'Executive Suite',
+    guest_id: 'c262832f-6f09-4a4a-8e92-447304fcebd8',
+    guest_name: 'Nguyễn Văn An',
+    guest_avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
+    rating: 5,
+    comment: 'Dịch vụ chuẩn 5 sao di sản Sài Gòn, giường ngủ êm ái, cách âm tuyệt đối. Tiệc buffet sáng tại Rooftop Garden là trải nghiệm ẩm thực khó quên!',
+    review_date: new Date('2026-02-16T14:15:00Z'),
+    is_featured: true,
+    helpful_count: 38,
+    stay_date: 'Chuyến công tác - Tháng 02/2026',
+    badge_title: 'Khách Hàng Thân Thiết'
+  },
+  {
+    review_id: '88888888-8888-8888-8888-888888888888',
+    hotel_id: 'b93a7112-f4dd-41cc-b529-d5d79114078e',
+    hotel_name: 'Khách sạn Caravelle Sài Gòn',
+    room_id: 'kdefgt',
+    room_number: 201,
+    room_type: 'Signature Suite',
+    guest_id: 'c262832f-6f09-4a4a-8e92-447304fcebd8',
+    guest_name: 'Nguyễn Văn An',
+    guest_avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
+    rating: 5,
+    comment: 'Phòng Signature Suite view trọn Nhà hát Lớn và sông Sài Gòn lộng lẫy. Dịch vụ quản gia đẳng cấp, cocktail tại Saigon Saigon Bar rất ấn tượng.',
+    review_date: new Date('2026-03-14T15:00:00Z'),
+    is_featured: true,
+    helpful_count: 56,
+    stay_date: 'Kỳ nghỉ gia đình - Tháng 03/2026',
+    badge_title: 'Thành Viên VIP'
+  },
+  {
+    review_id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+    hotel_id: 'b93a7112-f4dd-41cc-b529-d5d79114078e',
+    hotel_name: 'Khách sạn Caravelle Sài Gòn',
+    room_id: 'CV-101',
+    room_number: 101,
+    room_type: 'Deluxe City View',
+    guest_id: 'GUEST003',
+    guest_name: 'Lê Hoàng Long',
+    guest_avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80',
+    rating: 5,
+    comment: 'Phòng Deluxe bài trí thanh lịch, hồ bơi vô cực ngắm hoàng hôn tuyệt đẹp. Thủ tục check-in nhận phòng diễn ra nhanh chóng chỉ trong 2 phút.',
+    review_date: new Date('2026-03-05T11:20:00Z'),
+    is_featured: true,
+    helpful_count: 29,
+    stay_date: 'Kỳ nghỉ 3 đêm - Tháng 03/2026',
+    badge_title: 'Travel Blogger'
+  },
+  {
+    review_id: '99999999-9999-9999-9999-999999999999',
+    hotel_id: '5061bde8-f6f4-4767-9b92-cff82d9ab52b',
+    hotel_name: 'Khách sạn Sofitel Legend Metropole Hà Nội',
+    room_id: '12-CFG',
+    room_number: 101,
+    room_type: 'Heritage Deluxe',
+    guest_id: 'GUEST006',
+    guest_name: 'Vũ Ngọc Lan',
+    guest_avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+    rating: 5,
+    comment: 'Kiến trúc Pháp cổ kính ngập tràn cảm xúc nghệ thuật. Trà chiều tại Le Club và không gian hầm rượu cổ kính tạo nên kỳ nghỉ trăng mật trọn vẹn!',
+    review_date: new Date('2026-02-10T14:00:00Z'),
+    is_featured: true,
+    helpful_count: 63,
+    stay_date: 'Kỳ nghỉ trăng mật - Tháng 02/2026',
+    badge_title: 'Cặp Đôi Nghỉ Dưỡng'
+  },
+  {
+    review_id: 'cccccccc-cccc-cccc-cccc-cccccccccccc',
+    hotel_id: '5061bde8-f6f4-4767-9b92-cff82d9ab52b',
+    hotel_name: 'Khách sạn Sofitel Legend Metropole Hà Nội',
+    room_id: '12-CFG',
+    room_number: 101,
+    room_type: 'Heritage Deluxe',
+    guest_id: 'GUEST007',
+    guest_name: 'Đặng Minh Triết',
+    guest_avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=150&q=80',
+    rating: 5,
+    comment: 'Vẻ đẹp vượt thời gian của khách sạn cổ kính nhất Thủ đô. Chất lượng dịch vụ đẳng cấp quốc tế, bữa tối phong cách Pháp tại nhà hàng Le Beaulieu tuyệt hảo.',
+    review_date: new Date('2026-01-28T18:30:00Z'),
+    is_featured: true,
+    helpful_count: 51,
+    stay_date: 'Kỳ nghỉ đầu xuân - Tháng 01/2026',
+    badge_title: 'Chuyên Gia Ẩm Thực'
+  }
+];
+
+// 17. DANH SÁCH ĐÁNH GIÁ CẤP KHÁCH SẠN (hotel_reviews)
+const hotel_reviews = [
+  {
+    review_id: '11111111-1111-1111-1111-111111111111',
+    hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f',
+    user_id: '0eacb0ae-a973-4bfd-9818-9a927b713cf4',
+    user_name: 'Trần Thị Mai',
+    user_avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80',
+    booking_id: '16380824-0000-0000-0000-000000000001',
+    confirm_number: 16380824,
+    room_number: 204,
+    room_type: 'Executive Suite',
+    rating: 5,
+    comment: 'Khách sạn Rex Sài Gòn mang đậm dấu ấn lịch sử, phòng ốc tiện nghi và phục vụ chu đáo! Bồn sục Jacuzzi ngắm view phố đi bộ rất thoáng đãng.',
+    status: 'ACTIVE',
+    is_verified_stay: true,
+    stay_date: '10/03/2026 - 12/03/2026',
+    created_at: new Date('2026-03-12T09:30:00Z'),
+    updated_at: new Date('2026-03-12T09:30:00Z')
+  },
+  {
+    review_id: '33333333-3333-3333-3333-333333333333',
+    hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f',
+    user_id: 'GUEST001',
+    user_name: 'Nguyễn Văn A',
+    user_avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
+    booking_id: '3f2504e0-4f89-11d3-9a0c-0305e82c3301',
+    confirm_number: 44556688,
+    room_number: 101,
+    room_type: 'Standard King',
+    rating: 5,
+    comment: 'Vị trí đắc địa ngay trung tâm Quận 1, di chuyển đến các điểm tham quan rất tiện lợi. Nhân viên thân thiện, thủ tục nhận phòng nhanh.',
+    status: 'ACTIVE',
+    is_verified_stay: true,
+    stay_date: '01/03/2026 - 03/03/2026',
+    created_at: new Date('2026-03-03T10:00:00Z'),
+    updated_at: new Date('2026-03-03T10:00:00Z')
+  },
+  {
+    review_id: '44444444-4444-4444-4444-444444444444',
+    hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f',
+    user_id: 'GUEST002',
+    user_name: 'Trần Thị B',
+    user_avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+    booking_id: '66778899-0000-0000-0000-000000000006',
+    confirm_number: 55667799,
+    room_number: 101,
+    room_type: 'Standard King',
+    rating: 4,
+    comment: 'Phòng sạch sẽ, cách âm tương đối tốt. Bữa sáng phong phú, nếu có thêm nhiều lựa chọn trà chiều thì sẽ hoàn hảo hơn.',
+    status: 'ACTIVE',
+    is_verified_stay: true,
+    stay_date: '20/02/2026 - 22/02/2026',
+    created_at: new Date('2026-02-22T16:20:00Z'),
+    updated_at: new Date('2026-02-22T16:20:00Z')
+  },
+  {
+    review_id: '55555555-4444-3333-2222-111111111111',
+    hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f',
+    user_id: 'GUEST005',
+    user_name: 'Hoàng Minh Tuấn',
+    user_avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80',
+    booking_id: '99001122-0000-0000-0000-000000000009',
+    confirm_number: 66778811,
+    room_number: 201,
+    room_type: 'Junior Suite',
+    rating: 4,
+    comment: 'Dịch vụ chuẩn mực di sản, không gian cổ điển ấm cúng. Giá cả hợp lý cho vị trí đắc địa.',
+    status: 'ACTIVE',
+    is_verified_stay: true,
+    stay_date: '10/01/2026 - 12/01/2026',
+    created_at: new Date('2026-01-12T08:30:00Z'),
+    updated_at: new Date('2026-01-12T08:30:00Z')
+  },
+  {
+    review_id: '88888888-8888-8888-8888-888888888888',
+    hotel_id: 'b93a7112-f4dd-41cc-b529-d5d79114078e',
+    user_id: 'GUEST003',
+    user_name: 'Lê Hoàng Long',
+    user_avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80',
+    booking_id: '77889900-0000-0000-0000-000000000007',
+    confirm_number: 39102845,
+    room_number: 201,
+    room_type: 'Signature Suite',
+    rating: 5,
+    comment: 'Phòng Signature Suite view sông Sài Gòn tuyệt mỹ, dịch vụ quản gia đẳng cấp quốc tế.',
+    status: 'ACTIVE',
+    is_verified_stay: true,
+    stay_date: '10/03/2026 - 14/03/2026',
+    created_at: new Date('2026-03-14T15:00:00Z'),
+    updated_at: new Date('2026-03-14T15:00:00Z')
+  },
+  {
+    review_id: '99999999-9999-9999-9999-999999999999',
+    hotel_id: '5061bde8-f6f4-4767-9b92-cff82d9ab52b',
+    user_id: 'GUEST006',
+    user_name: 'Vũ Ngọc Lan',
+    user_avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+    booking_id: '11223344-0000-0000-0000-000000000010',
+    confirm_number: 77889922,
+    room_number: 101,
+    room_type: 'Heritage Deluxe',
+    rating: 5,
+    comment: 'Kiến trúc Pháp cổ kính lãng mạn, tiệc trà chiều tại Le Club và không gian hầm rượu rất độc đáo.',
+    status: 'ACTIVE',
+    is_verified_stay: true,
+    stay_date: '08/02/2026 - 10/02/2026',
+    created_at: new Date('2026-02-10T14:00:00Z'),
+    updated_at: new Date('2026-02-10T14:00:00Z')
+  }
+];
+
+// 18. TRA CỨU ĐÁNH GIÁ THEO ID (hotel_reviews_by_id)
+const hotel_reviews_by_id = [...hotel_reviews];
+
+// 19. CHỐNG ĐÁNH GIÁ TRÙNG LẶP THEO BOOKING ID (reviews_by_booking)
+const reviews_by_booking = hotel_reviews.map(r => ({
+  booking_id: r.booking_id,
+  review_id: r.review_id,
+  hotel_id: r.hotel_id,
+  user_id: r.user_id,
+  rating: r.rating,
+  created_at: r.created_at
+}));
+
+// 20. THỐNG KÊ RATING KHÁCH SẠN TIỀN TÍNH TOÁN (hotel_rating_summary)
+const hotel_rating_summary = [
+  {
+    hotel_id: '2d76c2a1-f312-4934-83ae-a59c0574805f',
+    average_rating: 4.8,
+    review_count: 4,
+    rating_sum: 18,
+    count_1_star: 0,
+    count_2_star: 0,
+    count_3_star: 0,
+    count_4_star: 2,
+    count_5_star: 2
+  },
+  {
+    hotel_id: 'b93a7112-f4dd-41cc-b529-d5d79114078e',
+    average_rating: 5.0,
+    review_count: 1,
+    rating_sum: 5,
+    count_1_star: 0,
+    count_2_star: 0,
+    count_3_star: 0,
+    count_4_star: 0,
+    count_5_star: 1
+  },
+  {
+    hotel_id: '5061bde8-f6f4-4767-9b92-cff82d9ab52b',
+    average_rating: 5.0,
+    review_count: 1,
+    rating_sum: 5,
+    count_1_star: 0,
+    count_2_star: 0,
+    count_3_star: 0,
+    count_4_star: 0,
+    count_5_star: 1
+  }
+];
+
 module.exports = {
   hotels,
   hotels_by_poi,
@@ -1017,5 +1577,17 @@ module.exports = {
   guests,
   bookings_by_guest,
   bookings_by_hotel_date,
-  invoices_by_booking
+  invoices_by_booking,
+  available_rooms_by_hotel_date,
+  reviews_by_room,
+  room_rating_summary,
+  rooms_by_hotel_rating,
+  reviews_by_confirmation,
+  featured_reviews,
+  hotel_reviews,
+  hotel_reviews_by_id,
+  reviews_by_booking,
+  hotel_rating_summary
 };
+
+

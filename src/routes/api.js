@@ -6,13 +6,41 @@ const roomController = require('../controllers/roomController');
 const bookingController = require('../controllers/bookingController');
 const invoiceController = require('../controllers/invoiceController');
 const analyticsController = require('../controllers/analyticsController');
+const reviewController = require('../controllers/reviewController');
+const { requireAuth, optionalAuth } = require('../middleware/auth');
+
+// ==============================================================================
+// MODULE ĐÁNH GIÁ KHÁCH SẠN (HOTEL REVIEWS & RATINGS)
+// ==============================================================================
+router.get('/hotels/:hotelId/reviews', reviewController.getHotelReviews);
+router.get('/hotels/:hotelId/reviews/stats', reviewController.getHotelReviewStats);
+router.post('/hotels/:hotelId/reviews', requireAuth, reviewController.createHotelReview);
+router.post('/reviews', requireAuth, reviewController.createHotelReview);
+router.get('/reviews/check-eligibility', requireAuth, reviewController.checkEligibility);
+router.get('/reviews/system-summary', reviewController.getSystemRatingSummary);
+router.get('/reviews/:reviewId', reviewController.getReviewById);
+router.put('/reviews/:reviewId', requireAuth, reviewController.updateHotelReview);
+router.delete('/reviews/:reviewId', requireAuth, reviewController.deleteHotelReview);
+
+// Admin: Quản lý và kiểm duyệt đánh giá
+router.get('/admin/reviews', reviewController.getAdminReviews);
+router.patch('/admin/reviews/:reviewId/status', reviewController.updateReviewStatus);
 
 // Hotels & POIs (Q1, Q2, Q3 theo Hotel.cql)
 router.get('/hotels', hotelController.getAllHotels);
 router.get('/hotels/pois', hotelController.getAllPois);
 router.get('/hotels/:hotelId', hotelController.getHotelById);
 router.get('/hotels/:hotelId/rooms', roomController.getRoomsByHotel);
+router.get('/hotels/:hotelId/rooms/search', roomController.searchRoomsWithPricing);
+router.get('/hotels/:hotelId/rooms/top-rated', roomController.getTopRatedRooms);
 router.get('/hotels/:hotelId/rooms/:roomId/amenities', roomController.getAmenitiesByRoom);
+router.get('/hotels/:hotelId/rooms/:roomId/reviews', roomController.getRoomReviews);
+router.get('/hotels/:hotelId/rooms/:roomId/rating', roomController.getRoomRating);
+router.post('/hotels/:hotelId/rooms/:roomId/reviews', roomController.createRoomReview);
+
+// Đánh giá nổi bật & Thả tim nhận xét hữu ích
+router.get('/reviews/featured', roomController.getFeaturedReviews);
+router.post('/reviews/:reviewId/helpful', roomController.markReviewHelpful);
 
 // Quản lý phòng & cập nhật trạng thái (Check-in, Check-out, Bảo trì)
 router.patch('/hotels/:hotelId/rooms/:roomNumber/status', roomController.updateRoomStatus);

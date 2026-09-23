@@ -97,13 +97,7 @@ async function loadHotels(poi = '') {
 }
 
 function getHotelGallery(hotel) {
-  const fallback = [HOTEL_PLACEHOLDER_IMAGE];
-
-  const gallery = Array.isArray(hotel?.gallery) && hotel.gallery.length
-    ? hotel.gallery
-    : fallback;
-
-  return Array.from({ length: 4 }, (_, index) => getSafeHotelImageUrl(gallery[index] || hotel?.image_url));
+  return getHotelGalleryImages(hotel);
 }
 
 function renderHotelList(hotels) {

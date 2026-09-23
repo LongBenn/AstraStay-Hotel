@@ -46,6 +46,8 @@ function switchAdminTab(tabId) {
   } else if (tabId === 'tab-rooms-schedule') {
     loadAdminRoomMatrix();
     loadAdminHotelSchedule();
+  } else if (tabId === 'tab-reviews') {
+    loadAdminReviews();
   }
 }
 
@@ -59,10 +61,16 @@ async function loadAdminHotels() {
 
       const adminSelect = document.getElementById('adminHotelSelect');
       const scheduleSelect = document.getElementById('scheduleHotelSelect');
+      const reviewHotelFilter = document.getElementById('adminReviewHotelFilter');
+
       const options = adminState.hotels.map(h => `<option value="${h.hotel_id}">${h.name} (${h.city})</option>`).join('');
 
       if (adminSelect) adminSelect.innerHTML = options;
       if (scheduleSelect) scheduleSelect.innerHTML = options;
+      if (reviewHotelFilter) {
+        reviewHotelFilter.innerHTML = '<option value="">Tất cả khách sạn</option>' +
+          adminState.hotels.map(h => `<option value="${h.hotel_id}">${h.name}</option>`).join('');
+      }
 
       // Tải dữ liệu ban đầu cho phòng và lịch trình
       loadAdminRoomMatrix();
@@ -378,3 +386,351 @@ function setupAdminEventListeners() {
     schedHotel.addEventListener('change', loadAdminHotelSchedule);
   }
 }
+
+// ==============================================================================
+// PHÂN HỆ: QUẢN LÝ & KIỂM DUYỆT ĐÁNH GIÁ (ADMIN REVIEW MODERATION)
+// ==============================================================================
+
+const adminReviewsState = {
+  reviews: [],
+  selectedReview: null,
+  searchTimer: null
+};
+
+/**
+ * Tải danh sách đánh giá từ API Admin với bộ lọc khách sạn, trạng thái, sao, từ khoá
+ */
+async function loadAdminReviews() {
+  const tableBody = document.getElementById('adminReviewsTableBody');
+  const footerCount = document.getElementById('adminReviewsTableFooterCount');
+  if (!tableBody) return;
+
+  tableBody.innerHTML = `
+    <tr>
+      <td colspan="6" class="text-center py-10 text-slate-400">
+        <i class="fa-solid fa-spinner fa-spin text-xl text-blue-600 mb-2"></i>
+        <p>Đang tải danh sách đánh giá từ Cassandra NoSQL...</p>
+      </td>
+    </tr>
+  `;
+
+  const hotelId = document.getElementById('adminReviewHotelFilter')?.value || '';
+  const status = document.getElementById('adminReviewStatusFilter')?.value || '';
+  const rating = document.getElementById('adminReviewStarFilter')?.value || '';
+  const search = document.getElementById('adminReviewSearchInput')?.value.trim() || '';
+
+  const params = new URLSearchParams();
+  if (hotelId) params.set('hotel_id', hotelId);
+  if (status) params.set('status', status);
+  if (rating) params.set('rating', rating);
+  if (search) params.set('search', search);
+
+  try {
+    const url = `/api/admin/reviews?${params.toString()}`;
+    const res = await fetch(url);
+    const json = await res.json();
+
+    if (!json.success) {
+      throw new Error(json.message || 'Không thể tải danh sách đánh giá');
+    }
+
+    const reviews = json.data || [];
+    adminReviewsState.reviews = reviews;
+
+    // Cập nhật các thẻ KPI tóm tắt
+    updateAdminReviewKPIs(reviews);
+
+    // Hiển thị bảng
+    renderAdminReviewsTable(reviews);
+
+    if (footerCount) {
+      footerCount.innerText = `Tìm thấy ${reviews.length} đánh giá phù hợp tiêu chí lọc`;
+    }
+  } catch (err) {
+    console.error('Lỗi tải đánh giá admin:', err);
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="6" class="text-center py-8 text-rose-500">
+          <i class="fa-solid fa-triangle-exclamation mr-1"></i> Lỗi khi tải dữ liệu: ${err.message}
+        </td>
+      </tr>
+    `;
+    if (footerCount) footerCount.innerText = 'Lỗi truy vấn dữ liệu';
+  }
+}
+
+/**
+ * Cập nhật các chỉ số tổng quan (KPI cards)
+ */
+function updateAdminReviewKPIs(reviews) {
+  const total = reviews.length;
+  const activeCount = reviews.filter(r => r.status === 'ACTIVE').length;
+  const hiddenCount = reviews.filter(r => r.status === 'HIDDEN').length;
+
+  const totalRatingActive = reviews.filter(r => r.status === 'ACTIVE').reduce((sum, r) => sum + Number(r.rating || 0), 0);
+  const avgRating = activeCount > 0 ? (totalRatingActive / activeCount).toFixed(1) : '5.0';
+
+  const totalEl = document.getElementById('kpiAdminTotalReviews');
+  const activeEl = document.getElementById('kpiAdminActiveReviews');
+  const hiddenEl = document.getElementById('kpiAdminHiddenReviews');
+  const avgEl = document.getElementById('kpiAdminAvgRating');
+
+  if (totalEl) totalEl.innerText = total;
+  if (activeEl) activeEl.innerText = activeCount;
+  if (hiddenEl) hiddenEl.innerText = hiddenCount;
+  if (avgEl) avgEl.innerText = `${avgRating} ⭐`;
+}
+
+/**
+ * Hiển thị dữ liệu bảng đánh giá
+ */
+function renderAdminReviewsTable(reviews) {
+  const tableBody = document.getElementById('adminReviewsTableBody');
+  if (!tableBody) return;
+
+  if (reviews.length === 0) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="6" class="text-center py-10 text-slate-400 bg-slate-50/50">
+          <i class="fa-regular fa-comment-dots text-3xl mb-2 text-slate-300"></i>
+          <p class="font-bold text-slate-600">Không tìm thấy đánh giá nào</p>
+          <p class="text-xs text-slate-400 mt-0.5">Hãy thử thay đổi điều kiện tìm kiếm hoặc bộ lọc</p>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tableBody.innerHTML = reviews.map(r => {
+    const isHidden = r.status === 'HIDDEN';
+    const statusBadge = isHidden
+      ? '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200"><i class="fa-solid fa-eye-slash"></i> ĐÃ ẨN</span>'
+      : '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200"><i class="fa-solid fa-circle-check"></i> ACTIVE</span>';
+
+    const starsHtml = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+    const dateStr = r.created_at ? new Date(r.created_at).toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    }) : 'Gần đây';
+
+    const avatar = r.guest_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(r.guest_name || 'Khách')}&background=0284c7&color=fff`;
+
+    return `
+      <tr class="hover:bg-slate-50/80 transition-colors ${isHidden ? 'bg-rose-50/20' : ''}">
+        
+        <!-- Khách sạn & Phòng -->
+        <td class="p-3.5">
+          <div class="font-bold text-slate-900">${r.hotel_name || r.hotel_id}</div>
+          <div class="text-[11px] text-slate-500 font-mono mt-0.5">
+            ${r.room_number ? `<span class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded font-bold font-sans">P.${r.room_number}</span>` : ''}
+            <span>Booking: ${r.booking_id ? String(r.booking_id).slice(0, 8) + '...' : 'N/A'}</span>
+          </div>
+        </td>
+
+        <!-- Khách hàng -->
+        <td class="p-3.5">
+          <div class="flex items-center gap-2.5">
+            <img src="${avatar}" alt="${r.guest_name}" class="w-8 h-8 rounded-full object-cover border border-slate-200 shadow-2xs flex-shrink-0"
+                 onerror="this.src='https://ui-avatars.com/api/?name=Guest&background=0284c7&color=fff'">
+            <div>
+              <div class="font-bold text-slate-800">${r.guest_name || 'Khách lưu trú'}</div>
+              <div class="text-[10px] text-slate-400 font-mono flex items-center gap-1">
+                <span>${r.guest_id}</span>
+                <span class="text-emerald-600 font-sans font-bold flex items-center gap-0.5">
+                  <i class="fa-solid fa-circle-check text-[9px]"></i> Đã lưu trú
+                </span>
+              </div>
+            </div>
+          </div>
+        </td>
+
+        <!-- Điểm & Nhận xét -->
+        <td class="p-3.5 max-w-md">
+          <div class="flex items-center gap-1.5 mb-1">
+            <span class="text-amber-500 text-xs tracking-wider font-bold">${starsHtml}</span>
+            <span class="text-[11px] font-black font-mono bg-amber-50 text-amber-800 px-1.5 py-0.2 rounded border border-amber-200">${r.rating}.0</span>
+          </div>
+          <div class="text-xs text-slate-700 italic line-clamp-2" title="${escapeHtml(r.comment)}">
+            "${escapeHtml(r.comment)}"
+          </div>
+          ${isHidden && r.hidden_reason ? `
+            <div class="text-[10px] text-rose-600 font-semibold mt-1 flex items-center gap-1">
+              <i class="fa-solid fa-circle-exclamation text-rose-500"></i> Lý do ẩn: ${escapeHtml(r.hidden_reason)}
+            </div>
+          ` : ''}
+        </td>
+
+        <!-- Thời gian -->
+        <td class="p-3.5 text-slate-500 font-mono text-[11px] whitespace-nowrap">
+          ${dateStr}
+        </td>
+
+        <!-- Trạng thái -->
+        <td class="p-3.5 text-center whitespace-nowrap">
+          ${statusBadge}
+        </td>
+
+        <!-- Hành động -->
+        <td class="p-3.5 text-right whitespace-nowrap">
+          <div class="flex items-center justify-end gap-1.5">
+            <button onclick="openAdminReviewDetailModal('${r.review_id}')" 
+                    class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg transition-colors flex items-center gap-1"
+                    title="Xem chi tiết nhận xét">
+              <i class="fa-regular fa-eye"></i> Chi tiết
+            </button>
+            
+            ${isHidden ? `
+              <button onclick="toggleReviewStatusDirectly('${r.review_id}', 'ACTIVE')" 
+                      class="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold rounded-lg transition-colors flex items-center gap-1"
+                      title="Hiển thị lại nhận xét này trên web khách hàng">
+                <i class="fa-solid fa-eye"></i> Hiện lại
+              </button>
+            ` : `
+              <button onclick="toggleReviewStatusDirectly('${r.review_id}', 'HIDDEN')" 
+                      class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold rounded-lg transition-colors flex items-center gap-1"
+                      title="Ẩn nhận xét này khỏi web khách hàng">
+                <i class="fa-solid fa-eye-slash"></i> Ẩn
+              </button>
+            `}
+          </div>
+        </td>
+
+      </tr>
+    `;
+  }).join('');
+}
+
+/**
+ * Mở Modal chi tiết đánh giá cho Admin
+ */
+function openAdminReviewDetailModal(reviewId) {
+  const review = adminReviewsState.reviews.find(r => r.review_id === reviewId);
+  if (!review) return;
+
+  adminReviewsState.selectedReview = review;
+
+  const modal = document.getElementById('adminReviewDetailModal');
+  const hotelNameEl = document.getElementById('admRevHotelName');
+  const stayInfoEl = document.getElementById('admRevStayInfo');
+  const bookingIdEl = document.getElementById('admRevBookingId');
+  const guestInfoEl = document.getElementById('admRevGuestInfo');
+  const ratingValueEl = document.getElementById('admRevRatingValue');
+  const ratingStarsEl = document.getElementById('admRevRatingStars');
+  const statusBadgeEl = document.getElementById('admRevStatusBadge');
+  const commentTextEl = document.getElementById('admRevCommentText');
+  const hiddenReasonBox = document.getElementById('admRevHiddenReasonBox');
+  const hiddenReasonText = document.getElementById('admRevHiddenReasonText');
+  const toggleBtn = document.getElementById('btnAdmToggleStatusModal');
+
+  if (hotelNameEl) hotelNameEl.innerText = review.hotel_name || review.hotel_id;
+  if (stayInfoEl) stayInfoEl.innerText = `${review.room_number ? `Phòng ${review.room_number}` : 'Đã lưu trú'} (${review.stay_date || 'Gần đây'})`;
+  if (bookingIdEl) bookingIdEl.innerText = review.booking_id || 'N/A';
+  if (guestInfoEl) guestInfoEl.innerText = `${review.guest_name || 'Khách'} (Mã: ${review.guest_id || 'N/A'})`;
+  if (ratingValueEl) ratingValueEl.innerText = `${review.rating}.0`;
+  if (ratingStarsEl) ratingStarsEl.innerText = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+  if (commentTextEl) commentTextEl.innerText = `"${review.comment}"`;
+
+  const isHidden = review.status === 'HIDDEN';
+  if (statusBadgeEl) {
+    statusBadgeEl.className = isHidden
+      ? 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200'
+      : 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200';
+    statusBadgeEl.innerHTML = isHidden
+      ? '<i class="fa-solid fa-eye-slash"></i> ĐÃ ẨN KHỎI KHÁCH HÀNG'
+      : '<i class="fa-solid fa-circle-check"></i> ĐANG HIỂN THỊ CÔNG KHAI';
+  }
+
+  if (isHidden) {
+    if (hiddenReasonBox) hiddenReasonBox.classList.remove('hidden');
+    if (hiddenReasonText) hiddenReasonText.innerText = review.hidden_reason || 'Vi phạm chính sách nội dung cộng đồng';
+    if (toggleBtn) {
+      toggleBtn.className = 'px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer';
+      toggleBtn.innerHTML = '<i class="fa-solid fa-eye"></i> Bỏ Ẩn / Hiển Thị Lại Đánh Giá';
+    }
+  } else {
+    if (hiddenReasonBox) hiddenReasonBox.classList.add('hidden');
+    if (toggleBtn) {
+      toggleBtn.className = 'px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer';
+      toggleBtn.innerHTML = '<i class="fa-solid fa-eye-slash"></i> Ẩn Đánh Giá Này';
+    }
+  }
+
+  modal.classList.remove('hidden');
+}
+
+function closeAdminReviewDetailModal() {
+  document.getElementById('adminReviewDetailModal')?.classList.add('hidden');
+}
+
+/**
+ * Xử lý nút toggle trạng thái từ trong Modal chi tiết
+ */
+function handleAdminModalStatusToggle() {
+  const review = adminReviewsState.selectedReview;
+  if (!review) return;
+
+  const newStatus = review.status === 'ACTIVE' ? 'HIDDEN' : 'ACTIVE';
+  closeAdminReviewDetailModal();
+  toggleReviewStatusDirectly(review.review_id, newStatus);
+}
+
+/**
+ * Gọi API đổi trạng thái ẩn/hiện đánh giá (PATCH /api/admin/reviews/:reviewId/status)
+ */
+async function toggleReviewStatusDirectly(reviewId, newStatus) {
+  let reason = '';
+  if (newStatus === 'HIDDEN') {
+    reason = prompt('Vui lòng nhập lý do ẩn đánh giá này (ví dụ: Chứa từ ngữ không phù hợp, quảng cáo rác, v.v.):', 'Vi phạm quy định nội dung');
+    if (reason === null) return; // Người dùng ấn Cancel
+  } else {
+    if (!confirm('Bạn có chắc chắn muốn bỏ ẩn và hiển thị lại nhận xét này trên trang công khai? Điểm trung bình của khách sạn sẽ được tính toán lại.')) {
+      return;
+    }
+  }
+
+  try {
+    const res = await fetch(`/api/admin/reviews/${encodeURIComponent(reviewId)}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        status: newStatus,
+        reason: reason || undefined
+      })
+    });
+
+    const json = await res.json();
+    if (!json.success) {
+      throw new Error(json.message || 'Không thể cập nhật trạng thái đánh giá');
+    }
+
+    alert(json.message || `Đã chuyển trạng thái đánh giá sang ${newStatus} thành công!`);
+    loadAdminReviews();
+  } catch (err) {
+    console.error('Lỗi cập nhật trạng thái review:', err);
+    alert('Không thể cập nhật trạng thái đánh giá: ' + err.message);
+  }
+}
+
+/**
+ * Debounce tìm kiếm review theo từ khóa
+ */
+function handleAdminReviewSearchDebounce() {
+  clearTimeout(adminReviewsState.searchTimer);
+  adminReviewsState.searchTimer = setTimeout(() => {
+    loadAdminReviews();
+  }, 350);
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
