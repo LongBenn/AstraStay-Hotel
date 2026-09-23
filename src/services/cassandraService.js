@@ -160,15 +160,27 @@ class CassandraService {
   }
 
   async updateRoomStatus(hotelId, roomNumber, status) {
+    const num = parseInt(roomNumber, 10);
     const cql = 'UPDATE rooms_by_hotel SET status = ? WHERE hotel_id = ? AND room_number = ?;';
-    await this.execute(cql, [status, hotelId, parseInt(roomNumber, 10)]);
+    await this.execute(cql, [status, hotelId, num]);
 
-    // Cập nhật mock store
-    const room = mockStore.rooms_by_hotel.find(r => r.hotel_id === hotelId && r.room_number === parseInt(roomNumber, 10));
+    // Cập nhật mock store rooms_by_hotel
+    const room = mockStore.rooms_by_hotel.find(r => r.hotel_id === hotelId && r.room_number === num);
     if (room) {
       room.status = status;
     }
-    return room || { hotel_id: hotelId, room_number: parseInt(roomNumber, 10), status };
+
+    // Đồng bộ tức thì sang available_rooms_by_hotel_date trong mock store
+    const isAvailNumber = status === 'AVAILABLE' ? 1 : 0;
+    if (Array.isArray(mockStore.available_rooms_by_hotel_date)) {
+      mockStore.available_rooms_by_hotel_date.forEach(ar => {
+        if (ar.hotel_id === hotelId && ar.room_number === num) {
+          ar.is_available = isAvailNumber;
+        }
+      });
+    }
+
+    return room || { hotel_id: hotelId, room_number: num, status };
   }
 
   async getAmenitiesByRoom(hotelId, roomId) {
@@ -787,12 +799,14 @@ class CassandraService {
       minRating = maybeRating;
     }
 
-    // Sinh danh sách các đêm lưu trú [checkIn, checkOut)
-    const inDate = new Date(`${checkIn}T00:00:00`);
-    const outDate = new Date(`${checkOut}T00:00:00`);
+    // Sinh danh sách các đêm lưu trú [checkIn, checkOut) dùng UTC tránh lệch múi giờ
+    const [inY, inM, inD] = checkIn.split('-').map(Number);
+    const [outY, outM, outD] = checkOut.split('-').map(Number);
+    const inDate = new Date(Date.UTC(inY, inM - 1, inD));
+    const outDate = new Date(Date.UTC(outY, outM - 1, outD));
     const stayDates = [];
 
-    for (let d = new Date(inDate); d < outDate; d.setDate(d.getDate() + 1)) {
+    for (let d = new Date(inDate); d < outDate; d.setUTCDate(d.getUTCDate() + 1)) {
       stayDates.push(d.toISOString().split('T')[0]);
     }
 
@@ -813,6 +827,49 @@ class CassandraService {
       rows = (mockStore.available_rooms_by_hotel_date || []).filter(item => {
         return item.hotel_id === hotelId && item.start_date >= checkIn && item.start_date < checkOut;
       });
+
+      // Bổ sung linh hoạt cho chế độ Demo/Mock:
+      // Tự động sinh lịch giá và phòng trống cho bất kỳ khoảng ngày nào (hiện tại, tương lai) nếu mockStore chưa có sẵn
+      const hotelRooms = (mockStore.rooms_by_hotel || []).filter(rm => rm.hotel_id === hotelId);
+      const existingKeySet = new Set(rows.map(r => `${r.room_number}_${r.start_date}`));
+
+      for (const rm of hotelRooms) {
+        const isAvailByStatus = (rm.status || '').toUpperCase() === 'AVAILABLE' ? 1 : 0;
+        const basePrice = Number(rm.price_per_night) || 1500000;
+
+        for (const dateStr of stayDates) {
+          const key = `${rm.room_number}_${dateStr}`;
+          if (!existingKeySet.has(key)) {
+            const d = new Date(`${dateStr}T00:00:00`);
+            const isWeekend = (d.getDay() === 5 || d.getDay() === 6);
+            const price = isWeekend ? Math.round(basePrice * 1.2) : basePrice;
+
+            // Kiểm tra trùng lịch trong bookings_by_hotel_date
+            const hasBooking = (mockStore.bookings_by_hotel_date || []).some(b =>
+              b.hotel_id === hotelId &&
+              parseInt(b.room_number, 10) === parseInt(rm.room_number, 10) &&
+              dateStr >= (b.start_date?.toString().slice(0, 10)) &&
+              dateStr < (b.end_date?.toString().slice(0, 10))
+            );
+
+            const isAvail = (isAvailByStatus === 1 && !hasBooking) ? 1 : 0;
+
+            rows.push({
+              hotel_id: hotelId,
+              start_date: dateStr,
+              room_number: rm.room_number,
+              room_id: rm.room_id,
+              room_type: rm.room_type,
+              price: price,
+              is_available: isAvail,
+              average_rating: 4.8,
+              review_count: 50,
+              is_weekend: isWeekend
+            });
+            existingKeySet.add(key);
+          }
+        }
+      }
     }
 
     // Nhóm theo room_id / room_number
