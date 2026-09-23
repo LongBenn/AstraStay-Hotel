@@ -888,6 +888,79 @@ let bookings_by_hotel_date = [
   }
 ];
 
+// Đồng bộ mã confirm_number cho toàn bộ các đơn hiện có
+const defaultConfirmNumbers = {
+  '16380824-0000-0000-0000-000000000001': 16380824,
+  '39102845-0000-0000-0000-000000000002': 39102845,
+  '28471920-0000-0000-0000-000000000003': 28471920,
+  '44556677-0000-0000-0000-000000000004': 44556677,
+  '3f2504e0-4f89-11d3-9a0c-0305e82c3301': 31250489,
+  '55667788-0000-0000-0000-000000000005': 55667788,
+  '66778899-0000-0000-0000-000000000006': 66778899,
+  '77889900-0000-0000-0000-000000000007': 77889900,
+  '88990011-0000-0000-0000-000000000008': 88990011,
+  '99001122-0000-0000-0000-000000000009': 99001122,
+  '11223344-0000-0000-0000-000000000010': 11223344,
+  '22334455-0000-0000-0000-000000000011': 22334455,
+  '33445566-0000-0000-0000-000000000012': 33445566,
+  '44332211-0000-0000-0000-000000000013': 44332211,
+  '55443322-0000-0000-0000-000000000014': 55443322
+};
+
+bookings_by_hotel_date.forEach(b => {
+  if (!b.confirm_number) {
+    b.confirm_number = defaultConfirmNumbers[b.booking_id] || Math.floor(10000000 + Math.random() * 90000000);
+  }
+});
+
+bookings_by_guest.forEach(b => {
+  if (!b.confirm_number) {
+    b.confirm_number = defaultConfirmNumbers[b.booking_id] || Math.floor(10000000 + Math.random() * 90000000);
+  }
+});
+
+// ==============================================================================
+// BẢNG Q6: TRA CỨU THEO MÃ XÁC NHẬN (reservations_by_confirmation)
+// ==============================================================================
+let reservations_by_confirmation = bookings_by_hotel_date.map(b => ({
+  confirm_number: b.confirm_number,
+  hotel_id: b.hotel_id,
+  hotel_name: (hotels.find(h => h.hotel_id === b.hotel_id) || {}).name || 'Khách Sạn AstraStay',
+  room_id: b.room_id || `RM-${b.room_number}`,
+  room_number: b.room_number,
+  start_date: b.check_in_date,
+  end_date: b.check_out_date,
+  guest_id: b.guest_id,
+  guest_name: b.guest_name,
+  booking_id: b.booking_id,
+  total_amount: b.total_amount,
+  status: b.status
+}));
+
+// ==============================================================================
+// BẢNG Q8: TRA CỨU ĐẶT PHÒNG THEO HỌ KHÁCH HÀNG (reservations_by_guest)
+// ==============================================================================
+function getLastName(fullName) {
+  if (!fullName) return 'Khác';
+  return fullName.trim().split(/\s+/)[0];
+}
+
+let reservations_by_guest = bookings_by_hotel_date.map(b => ({
+  guest_last_name: getLastName(b.guest_name),
+  hotel_id: b.hotel_id,
+  hotel_name: (hotels.find(h => h.hotel_id === b.hotel_id) || {}).name || 'Khách Sạn AstraStay',
+  guest_id: b.guest_id,
+  guest_name: b.guest_name,
+  room_id: b.room_id || `RM-${b.room_number}`,
+  room_number: b.room_number,
+  start_date: b.check_in_date,
+  end_date: b.check_out_date,
+  confirm_number: b.confirm_number,
+  booking_id: b.booking_id,
+  total_amount: b.total_amount,
+  status: b.status
+}));
+
 // 9. DANH SÁCH HOÁ ĐƠN (invoices_by_booking - Q5)
 let invoices_by_booking = [
   {
@@ -1577,6 +1650,8 @@ module.exports = {
   guests,
   bookings_by_guest,
   bookings_by_hotel_date,
+  reservations_by_confirmation,
+  reservations_by_guest,
   invoices_by_booking,
   available_rooms_by_hotel_date,
   reviews_by_room,

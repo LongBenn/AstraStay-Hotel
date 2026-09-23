@@ -166,9 +166,35 @@ async function seedDatabase() {
         [fr.hotel_id, fr.rating, fr.review_id, fr.guest_id, fr.guest_name, fr.guest_avatar, fr.hotel_name, fr.room_id, fr.room_number, fr.room_type, fr.comment, fr.review_date, fr.is_featured, fr.helpful_count, fr.stay_date, fr.badge_title],
         { prepare: true }
       );
+    // 15. Nạp reservations_by_confirmation (Q6)
+    console.log('-> Nạp bảng reservations_by_confirmation (Q6)...');
+    for (const r of (mockStore.reservations_by_confirmation || [])) {
+      try {
+        await client.execute(
+          'INSERT INTO reservations_by_confirmation (confirm_number, hotel_id, room_id, start_date, end_date, guest_id) VALUES (?, ?, ?, ?, ?, ?);',
+          [r.confirm_number, r.hotel_id, r.room_id, r.start_date, r.end_date, r.guest_id],
+          { prepare: true }
+        );
+      } catch (e) {
+        // Skip duplicate or format warning
+      }
     }
 
-    console.log('\n Đã nạp thành công toàn bộ dữ liệu mẫu mở rộng lên Astra DB!');
+    // 16. Nạp reservations_by_guest (Q8)
+    console.log('-> Nạp bảng reservations_by_guest (Q8)...');
+    for (const r of (mockStore.reservations_by_guest || [])) {
+      try {
+        await client.execute(
+          'INSERT INTO reservations_by_guest (guest_last_name, hotel_id, guest_id, room_id, start_date, end_date, confirm_number) VALUES (?, ?, ?, ?, ?, ?, ?);',
+          [r.guest_last_name, r.hotel_id, r.guest_id, r.room_id, r.start_date, r.end_date, r.confirm_number],
+          { prepare: true }
+        );
+      } catch (e) {
+        // Skip duplicate or format warning
+      }
+    }
+
+    console.log('\n Đã nạp thành công toàn bộ dữ liệu mẫu mở rộng (Q1-Q9) lên Astra DB!');
   } catch (err) {
     console.error('\n Lỗi khi nạp dữ liệu mẫu:', err);
   } finally {

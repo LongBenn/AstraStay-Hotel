@@ -310,7 +310,136 @@ class CassandraService {
     return hotelBooking || null;
   }
 
-  // TẠO ĐẶT PHÒNG MỚI: Sử dụng Cassandra LOGGED BATCH đồng bộ đồng thời vào 2 bảng + hoá đơn + đổi trạng thái phòng
+  // Q6. Tra cứu đặt phòng theo mã xác nhận số nguyên (confirm_number)
+  async getReservationByConfirmNumber(confirmNumber) {
+    const num = parseInt(confirmNumber, 10);
+    if (isNaN(num)) return null;
+
+    const { isConnected, connectionMode } = getConnectionStatus();
+    if (connectionMode !== 'MOCK' && isConnected) {
+      try {
+        const cql = 'SELECT * FROM reservations_by_confirmation WHERE confirm_number = ?;';
+        const rows = await this.execute(cql, [num]);
+        if (rows && rows.length > 0) {
+          const r = rows[0];
+          const bookingDetail = r.booking_id ? await this.getBookingById(r.booking_id) : null;
+          return {
+            ...r,
+            confirm_number: r.confirm_number,
+            start_date: r.start_date?.toString(),
+            end_date: r.end_date?.toString(),
+            ...(bookingDetail || {})
+          };
+        }
+      } catch (err) {
+        console.error('Lỗi khi tra cứu reservations_by_confirmation:', err);
+      }
+    }
+
+    const found = (mockStore.reservations_by_confirmation || []).find(r => Number(r.confirm_number) === num);
+    if (found) {
+      const invoice = mockStore.invoices_by_booking.find(i => String(i.booking_id).toLowerCase() === String(found.booking_id).toLowerCase());
+      return { ...found, invoice };
+    }
+    return null;
+  }
+
+  // Q8. Tìm kiếm tất cả đặt phòng theo họ của khách (guest_last_name)
+  async getReservationsByGuestLastName(lastName, hotelId = null) {
+    if (!lastName) return [];
+    const cleanLastName = lastName.trim();
+
+    const { isConnected, connectionMode } = getConnectionStatus();
+    if (connectionMode !== 'MOCK' && isConnected) {
+      try {
+        let cql, params;
+        if (hotelId) {
+          cql = 'SELECT * FROM reservations_by_guest WHERE guest_last_name = ? AND hotel_id = ?;';
+          params = [cleanLastName, hotelId];
+        } else {
+          cql = 'SELECT * FROM reservations_by_guest WHERE guest_last_name = ?;';
+          params = [cleanLastName];
+        }
+        const rows = await this.execute(cql, params);
+        return (rows || []).map(r => ({
+          ...r,
+          start_date: r.start_date?.toString(),
+          end_date: r.end_date?.toString(),
+          total_amount: typeof r.total_amount === 'object' ? parseFloat(r.total_amount.toString()) : r.total_amount
+        }));
+      } catch (err) {
+        console.error('Lỗi khi tra cứu reservations_by_guest:', err);
+      }
+    }
+
+    return (mockStore.reservations_by_guest || []).filter(r => {
+      const match = r.guest_last_name && r.guest_last_name.toLowerCase() === cleanLastName.toLowerCase();
+      if (!match) return false;
+      if (hotelId) return r.hotel_id === hotelId;
+      return true;
+    });
+  }
+
+  // Q9. Tìm kiếm thông tin chi tiết khách hàng theo ID (guests)
+  async getGuestById(guestId) {
+    if (!guestId) return null;
+    const cleanId = String(guestId).trim();
+
+    const { isConnected, connectionMode } = getConnectionStatus();
+    if (connectionMode !== 'MOCK' && isConnected) {
+      try {
+        const cql = 'SELECT guest_id, first_name, last_name, email, phone_numbers, addresses FROM guests WHERE guest_id = ?;';
+        const rows = await this.execute(cql, [cleanId]);
+        if (rows && rows.length > 0) return rows[0];
+      } catch (err) {
+        console.error('Lỗi khi tra cứu guests theo ID:', err);
+      }
+    }
+
+    const guest = (mockStore.guests || []).find(g => String(g.guest_id).toLowerCase() === cleanId.toLowerCase());
+    if (guest) {
+      const guestBookings = (mockStore.bookings_by_guest || []).filter(b => String(b.guest_id).toLowerCase() === cleanId.toLowerCase());
+      const totalSpent = guestBookings.reduce((sum, b) => sum + (Number(b.total_amount) || 0), 0);
+      return {
+        ...guest,
+        full_name: `${guest.last_name || ''} ${guest.first_name || ''}`.trim(),
+        total_bookings: guestBookings.length,
+        total_spent: totalSpent,
+        recent_bookings: guestBookings.slice(0, 5)
+      };
+    }
+    return null;
+  }
+
+  // Q9. Lấy danh sách toàn bộ khách hàng
+  async getAllGuests() {
+    const { isConnected, connectionMode } = getConnectionStatus();
+    if (connectionMode !== 'MOCK' && isConnected) {
+      try {
+        const cql = 'SELECT guest_id, first_name, last_name, email, phone_numbers, addresses FROM guests;';
+        const rows = await this.execute(cql, []);
+        return (rows || []).map(g => ({
+          ...g,
+          full_name: `${g.last_name || ''} ${g.first_name || ''}`.trim()
+        }));
+      } catch (err) {
+        console.error('Lỗi khi lấy danh sách guests:', err);
+      }
+    }
+
+    return (mockStore.guests || []).map(g => {
+      const guestBookings = (mockStore.bookings_by_guest || []).filter(b => String(b.guest_id).toLowerCase() === String(g.guest_id).toLowerCase());
+      const totalSpent = guestBookings.reduce((sum, b) => sum + (Number(b.total_amount) || 0), 0);
+      return {
+        ...g,
+        full_name: `${g.last_name || ''} ${g.first_name || ''}`.trim(),
+        total_bookings: guestBookings.length,
+        total_spent: totalSpent
+      };
+    });
+  }
+
+  // TẠO ĐẶT PHÒNG MỚI: Sử dụng Cassandra LOGGED BATCH đồng bộ đồng thời vào các bảng (Q3, Q4, Q6, Q8) + hoá đơn + đổi trạng thái phòng
   async createBooking({
     guest_id,
     guest_name,
@@ -329,6 +458,8 @@ class CassandraService {
   }) {
     const booking_id = uuidv4();
     const invoice_id = uuidv4();
+    const confirm_number = Math.floor(10000000 + Math.random() * 90000000); // Mã xác nhận 8 chữ số cho Q6
+    const guest_last_name = (guest_name || 'Khách').trim().split(/\s+/)[0]; // Trích xuất Họ cho Q8
     const room_num = parseInt(room_number, 10);
     const num_nights = parseInt(nights, 10) || 1;
     const room_charge = price_per_night * num_nights;
@@ -359,21 +490,35 @@ class CassandraService {
       }
     }
 
-    // 1. Chuẩn bị các câu lệnh cho Cassandra LOGGED BATCH
+    // 1. Chuẩn bị các câu lệnh cho Cassandra LOGGED BATCH (Đồng bộ nguyên tử các bảng NoSQL)
     const batchQueries = [
       {
+        // 1. Lưu vào lịch sử khách hàng (Q3)
         query: 'INSERT INTO bookings_by_guest (guest_id, check_in_date, booking_id, hotel_id, hotel_name, room_number, check_out_date, total_amount, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);',
         params: [guest_id, cqlCheckIn, cqlBookingId, hotel_id, hotel_name, room_num, cqlCheckOut, total_amount, status]
       },
       {
+        // 2. Lưu vào lịch trình đón khách của khách sạn (Q7: bookings_by_hotel_date)
         query: 'INSERT INTO bookings_by_hotel_date (hotel_id, check_in_date, booking_id, guest_id, guest_name, room_number, check_out_date, total_amount, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);',
         params: [hotel_id, cqlCheckIn, cqlBookingId, guest_id, guest_name, room_num, cqlCheckOut, total_amount, status]
       },
       {
+        // 3. Tra cứu nhanh theo mã xác nhận 8 số (Q6: reservations_by_confirmation)
+        query: 'INSERT INTO reservations_by_confirmation (confirm_number, hotel_id, room_id, start_date, end_date, guest_id) VALUES (?, ?, ?, ?, ?, ?);',
+        params: [confirm_number, hotel_id, room_id || `RM-${room_num}`, cqlCheckIn, cqlCheckOut, guest_id]
+      },
+      {
+        // 4. Tra cứu đặt phòng theo họ khách (Q8: reservations_by_guest)
+        query: 'INSERT INTO reservations_by_guest (guest_last_name, hotel_id, guest_id, room_id, start_date, end_date, confirm_number) VALUES (?, ?, ?, ?, ?, ?, ?);',
+        params: [guest_last_name, hotel_id, guest_id, room_id || `RM-${room_num}`, cqlCheckIn, cqlCheckOut, confirm_number]
+      },
+      {
+        // 5. Tạo hoá đơn điện tử (Q5)
         query: 'INSERT INTO invoices_by_booking (booking_id, invoice_id, guest_id, hotel_id, room_charge, service_charge, tax, total_amount, payment_status, issued_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);',
         params: [cqlBookingId, cqlInvoiceId, guest_id, hotel_id, room_charge, service_charge, tax, total_amount, paymentState, issued_at]
       },
       {
+        // 6. Đổi trạng thái phòng sang OCCUPIED (Q2)
         query: 'UPDATE rooms_by_hotel SET status = ? WHERE hotel_id = ? AND room_number = ?;',
         params: ['OCCUPIED', hotel_id, room_num]
       }
@@ -385,8 +530,10 @@ class CassandraService {
     // Cập nhật MockStore để đồng bộ trạng thái
     const newGuestBooking = {
       guest_id,
+      guest_name,
       check_in_date,
       booking_id,
+      confirm_number,
       hotel_id,
       hotel_name,
       room_number: room_num,
@@ -405,6 +552,7 @@ class CassandraService {
       hotel_id,
       check_in_date,
       booking_id,
+      confirm_number,
       guest_id,
       guest_name,
       room_number: room_num,
@@ -418,6 +566,42 @@ class CassandraService {
       payment_status: paymentState
     };
     mockStore.bookings_by_hotel_date.unshift(newHotelBooking);
+
+    // Bổ sung Q6 và Q8 vào MockStore
+    if (mockStore.reservations_by_confirmation) {
+      mockStore.reservations_by_confirmation.unshift({
+        confirm_number,
+        hotel_id,
+        hotel_name,
+        room_id: room_id || `RM-${room_num}`,
+        room_number: room_num,
+        start_date: check_in_date,
+        end_date: check_out_date,
+        guest_id,
+        guest_name,
+        booking_id,
+        total_amount,
+        status
+      });
+    }
+
+    if (mockStore.reservations_by_guest) {
+      mockStore.reservations_by_guest.unshift({
+        guest_last_name,
+        hotel_id,
+        hotel_name,
+        guest_id,
+        guest_name,
+        room_id: room_id || `RM-${room_num}`,
+        room_number: room_num,
+        start_date: check_in_date,
+        end_date: check_out_date,
+        confirm_number,
+        booking_id,
+        total_amount,
+        status
+      });
+    }
 
     const newInvoice = {
       booking_id,
@@ -444,7 +628,8 @@ class CassandraService {
 
     return {
       booking: newGuestBooking,
-      invoice: newInvoice
+      invoice: newInvoice,
+      confirm_number
     };
   }
 
@@ -498,6 +683,12 @@ class CassandraService {
 
     const hotelBooking = mockStore.bookings_by_hotel_date.find(b => String(b.booking_id).toLowerCase() === String(bookingId).toLowerCase());
     if (hotelBooking) hotelBooking.status = 'CANCELLED';
+
+    const confBooking = (mockStore.reservations_by_confirmation || []).find(b => String(b.booking_id).toLowerCase() === String(bookingId).toLowerCase());
+    if (confBooking) confBooking.status = 'CANCELLED';
+
+    const guestRes = (mockStore.reservations_by_guest || []).find(b => String(b.booking_id).toLowerCase() === String(bookingId).toLowerCase());
+    if (guestRes) guestRes.status = 'CANCELLED';
 
     const room = mockStore.rooms_by_hotel.find(r => r.hotel_id === hotel_id && r.room_number === parseInt(room_number, 10));
     if (room) room.status = 'AVAILABLE';

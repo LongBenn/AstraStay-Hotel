@@ -132,25 +132,25 @@
 
 
       <!-- ================================================================= -->
-      <!-- BẢNG LỊCH TRÌNH ĐẶT PHÒNG THEO NGÀY (Q4: bookings_by_hotel_date)  -->
-      <!-- Hiển thị ĐẦY ĐỦ UUID (kèm nút Copy) và Mã Khách Hàng (guest_id)    -->
+      <!-- BẢNG LỊCH TRÌNH ĐẶT PHÒNG THEO NGÀY (Q7: bookings_by_hotel_date)  -->
+      <!-- Hiển thị Mã Xác Nhận (Q6), Booking UUID và Thông tin Khách (Q9)   -->
       <!-- ================================================================= -->
       <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
         
         <div class="flex flex-col lg:flex-row lg:items-center justify-between pb-4 border-b border-slate-100 gap-4">
           <div>
             <div class="flex items-center gap-2">
-              <h3 class="text-base font-extrabold text-slate-900">Lịch Trình Khách Đến (Q4: bookings_by_hotel_date)</h3>
+              <h3 class="text-base font-extrabold text-slate-900">Lịch Trình Khách Đến (Q7: bookings_by_hotel_date)</h3>
               <span id="scheduleBookingCount" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800">
                 0 lượt đặt
               </span>
             </div>
             <p class="text-xs text-slate-500 mt-0.5">
-              Tra cứu danh sách đặt phòng theo khách sạn và khoảng thời gian. Có thể sao chép trực tiếp <strong>Mã Đặt Phòng (UUID)</strong> hoặc <strong>Mã Khách Hàng (guest_id)</strong> để tra cứu nhanh.
+              Tra cứu danh sách khách đến nhận phòng theo khách sạn và ngày (Q7). Hỗ trợ tra cứu theo <strong>Mã Xác Nhận 8 số (Q6)</strong> và <strong>Họ khách hàng (Q8)</strong>.
             </p>
           </div>
 
-          <!-- Bộ lọc khách sạn và ngày -->
+          <!-- Bộ lọc khách sạn, ngày và tìm theo Họ khách hàng (Q8) -->
           <div class="flex flex-wrap items-center gap-2">
             <select id="scheduleHotelSelect" class="bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
               <!-- Rendered dynamically -->
@@ -163,8 +163,15 @@
               <span class="text-slate-400 text-[11px]">Đến:</span>
               <input type="date" id="scheduleEndDate" class="bg-transparent border-none text-xs font-semibold focus:outline-none">
             </div>
+            <div class="flex items-center gap-1 bg-purple-50 px-2.5 py-1 rounded-xl border border-purple-200 text-xs">
+              <i class="fa-solid fa-user-tag text-purple-600"></i>
+              <input type="text" id="scheduleLastName" placeholder="Tìm Họ (Q8: Nguyễn...)" class="bg-transparent border-none text-xs font-semibold focus:outline-none w-36 placeholder:text-purple-400" onkeydown="if(event.key==='Enter') loadAdminHotelSchedule()">
+            </div>
             <button onclick="loadAdminHotelSchedule()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-colors shadow-sm flex items-center gap-1">
-              <i class="fa-solid fa-filter"></i> Lọc dữ liệu
+              <i class="fa-solid fa-filter"></i> Lọc
+            </button>
+            <button onclick="resetScheduleFilter()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs transition-colors" title="Đặt lại bộ lọc">
+              <i class="fa-solid fa-rotate-left"></i>
             </button>
           </div>
         </div>
@@ -174,8 +181,9 @@
           <table class="w-full text-left text-xs">
             <thead class="bg-slate-50 text-slate-600 uppercase font-black tracking-wider border-b border-slate-200">
               <tr>
-                <th class="p-3.5 min-w-[320px]">Mã Đặt Phòng (Booking UUID)</th>
-                <th class="p-3.5 min-w-[200px]">Khách Hàng (Tên & Mã)</th>
+                <th class="p-3.5 min-w-[130px]">Mã Xác Nhận (Q6)</th>
+                <th class="p-3.5 min-w-[280px]">Mã Đặt Phòng (UUID)</th>
+                <th class="p-3.5 min-w-[190px]">Khách Hàng (Q9)</th>
                 <th class="p-3.5">Phòng</th>
                 <th class="p-3.5 min-w-[130px]">Thời Gian Lưu Trú</th>
                 <th class="p-3.5">Tổng Tiền</th>
@@ -184,7 +192,7 @@
               </tr>
             </thead>
             <tbody id="scheduleTableBody">
-              <!-- Rendered dynamically with full UUID and guest_id -->
+              <!-- Rendered dynamically with full UUID, confirm_number, and guest_id -->
             </tbody>
           </table>
         </div>
@@ -637,6 +645,94 @@
     </div>
   </div>
 
+  <!-- ===================================================================== -->
+  <!-- MODAL: HỒ SƠ KHÁCH HÀNG (Q9: GUESTS DETAIL MODAL)                     -->
+  <!-- ===================================================================== -->
+  <div id="adminGuestProfileModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden animate-fadeIn">
+      
+      <div class="p-5 bg-gradient-to-r from-blue-700 to-indigo-800 text-white flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center text-amber-300 font-bold text-lg">
+            <i class="fa-solid fa-user-shield"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold">Hồ Sơ Khách Hàng (Q9)</h3>
+            <p class="text-xs text-blue-200">Bảng NoSQL: <code class="font-mono bg-white/20 px-1 py-0.5 rounded">guests</code></p>
+          </div>
+        </div>
+        <button onclick="closeAdminGuestProfileModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4 text-xs">
+        
+        <!-- Header Info -->
+        <div class="flex items-center gap-3.5 p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
+          <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white font-black text-sm flex items-center justify-center flex-shrink-0 shadow-sm">
+            <span id="admGuestAvatarText">KH</span>
+          </div>
+          <div class="min-w-0 flex-1">
+            <div id="admGuestFullName" class="font-black text-slate-900 text-sm truncate">-</div>
+            <div class="flex items-center gap-1.5 mt-0.5">
+              <span id="admGuestIdBadge" class="font-mono text-[11px] text-blue-700 bg-blue-50 px-2 py-0.5 rounded font-bold border border-blue-200">GUEST001</span>
+              <button onclick="copyToClipboard(document.getElementById('admGuestIdBadge').innerText, this)" class="text-slate-400 hover:text-slate-600" title="Sao chép">
+                <i class="fa-regular fa-copy"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chi tiết liên hệ -->
+        <div class="space-y-2.5">
+          <div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <i class="fa-solid fa-envelope text-blue-500 mt-0.5"></i>
+            <div>
+              <div class="text-[10px] uppercase font-bold text-slate-400">Email liên hệ:</div>
+              <div id="admGuestEmail" class="font-semibold text-slate-800 break-all">-</div>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <i class="fa-solid fa-phone text-emerald-500 mt-0.5"></i>
+            <div>
+              <div class="text-[10px] uppercase font-bold text-slate-400">Số Điện Thoại:</div>
+              <div id="admGuestPhone" class="font-semibold text-slate-800">-</div>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <i class="fa-solid fa-location-dot text-rose-500 mt-0.5"></i>
+            <div>
+              <div class="text-[10px] uppercase font-bold text-slate-400">Địa Chỉ Thường Trú:</div>
+              <div id="admGuestAddress" class="font-semibold text-slate-800">-</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Thống kê lưu trú -->
+        <div class="grid grid-cols-2 gap-3 pt-1">
+          <div class="p-3 bg-blue-50 rounded-2xl border border-blue-200">
+            <div class="text-slate-500 font-semibold text-[10px] uppercase">Lượt đặt phòng:</div>
+            <div id="admGuestTotalBookings" class="text-base font-black text-blue-700 mt-0.5">0 lượt</div>
+          </div>
+          <div class="p-3 bg-amber-50 rounded-2xl border border-amber-200">
+            <div class="text-slate-500 font-semibold text-[10px] uppercase">Tổng chi tiêu:</div>
+            <div id="admGuestTotalSpent" class="text-base font-black text-amber-700 mt-0.5">0 đ</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end">
+        <button onclick="closeAdminGuestProfileModal()" class="px-5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-xs rounded-xl transition-colors cursor-pointer">
+          Đóng
+        </button>
+      </div>
+
+    </div>
+  </div>
 
   <!-- ===================================================================== -->
   <!-- CQL QUERY INSPECTOR (FLOATING DRAWER)                                -->

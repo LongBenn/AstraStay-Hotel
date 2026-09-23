@@ -125,3 +125,38 @@ exports.getRecentBookings = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// Q6. Tra cứu theo mã xác nhận số (confirm_number)
+exports.getBookingByConfirmation = async (req, res) => {
+  try {
+    const { confirmNumber } = req.params;
+    const reservation = await cassandraService.getReservationByConfirmNumber(confirmNumber);
+    if (!reservation) {
+      return res.status(404).json({ success: false, message: `Không tìm thấy đơn đặt phòng với mã xác nhận: ${confirmNumber}` });
+    }
+    return res.json({ success: true, data: reservation });
+  } catch (error) {
+    console.error('Error getting reservation by confirmation:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Q8. Tra cứu theo Họ khách hàng (guest_last_name)
+exports.getBookingsByGuestLastName = async (req, res) => {
+  try {
+    const { lastName, hotelId } = req.query;
+    if (!lastName) {
+      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp tham số lastName (Họ của khách, ví dụ: lastName=Nguyễn)' });
+    }
+    const reservations = await cassandraService.getReservationsByGuestLastName(lastName, hotelId);
+    return res.json({
+      success: true,
+      data: reservations,
+      count: reservations.length,
+      query: { lastName, hotelId: hotelId || 'Tất cả' }
+    });
+  } catch (error) {
+    console.error('Error fetching reservations by guest last name:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};

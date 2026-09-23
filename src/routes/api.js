@@ -7,6 +7,7 @@ const bookingController = require('../controllers/bookingController');
 const invoiceController = require('../controllers/invoiceController');
 const analyticsController = require('../controllers/analyticsController');
 const reviewController = require('../controllers/reviewController');
+const guestController = require('../controllers/guestController');
 const { requireAuth, optionalAuth } = require('../middleware/auth');
 
 // ==============================================================================
@@ -49,9 +50,15 @@ router.patch('/hotels/:hotelId/rooms/:roomNumber/status', roomController.updateR
 router.post('/bookings', bookingController.createBooking);
 router.get('/bookings/recent', bookingController.getRecentBookings);
 router.get('/bookings/detail/:bookingId', bookingController.getBookingById);
+router.get('/bookings/confirmation/:confirmNumber', bookingController.getBookingByConfirmation); // Q6: Tra cứu theo mã xác nhận số
+router.get('/bookings/by-last-name', bookingController.getBookingsByGuestLastName); // Q8: Tra cứu theo Họ khách
 router.delete('/bookings/:bookingId', bookingController.cancelBooking);
 router.get('/bookings/guest/:guestId', bookingController.getBookingsByGuest);
-router.get('/bookings/hotel/:hotelId', bookingController.getBookingsByHotelDate);
+router.get('/bookings/hotel/:hotelId', bookingController.getBookingsByHotelDate); // Q7: Lịch trình đón khách theo KS & ngày
+
+// Khách hàng (Q9: guests)
+router.get('/guests/:guestId', guestController.getGuestProfile);
+router.get('/guests', guestController.getAllGuests);
 
 // Hoá đơn (Q5)
 router.get('/invoices/:bookingId', invoiceController.getInvoiceByBooking);

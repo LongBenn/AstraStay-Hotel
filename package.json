@@ -8,7 +8,8 @@
     "dev": "node --watch src/app.js",
     "init-db": "node src/scripts/init-db.js",
     "seed": "node src/scripts/seed-data.js",
-    "test": "node test/review-pricing.test.js && node test/hotel-review.test.js && node test/e2e-review-flow.test.js",
+    "test": "node test/q6-q9-features.test.js && node test/review-pricing.test.js && node test/hotel-review.test.js && node test/e2e-review-flow.test.js",
+    "test:q6q9": "node test/q6-q9-features.test.js",
     "test:reviews": "node test/hotel-review.test.js && node test/e2e-review-flow.test.js"
   },
   "keywords": [

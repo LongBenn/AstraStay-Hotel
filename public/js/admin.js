@@ -172,24 +172,32 @@ async function changeRoomStatusAction(hotelId, roomNumber, newStatus) {
   }
 }
 
-// 2. Lịch trình Đặt phòng theo Khách sạn & Ngày (Q4: bookings_by_hotel_date)
-// Hiển thị ĐẦY ĐỦ Mã đặt phòng (UUID) kèm nút sao chép, và hiển thị rõ ràng Mã khách hàng (guest_id)
+// 2. Lịch trình Đặt phòng theo Khách sạn & Ngày (Q7: bookings_by_hotel_date)
+// Hỗ trợ tra cứu theo Họ (Q8), hiển thị Mã Xác Nhận (Q6) và xem hồ sơ khách hàng (Q9)
 async function loadAdminHotelSchedule() {
   const hotelId = document.getElementById('scheduleHotelSelect')?.value || adminState.selectedHotelId;
   const startDate = document.getElementById('scheduleStartDate')?.value;
   const endDate = document.getElementById('scheduleEndDate')?.value;
+  const lastName = document.getElementById('scheduleLastName')?.value?.trim();
   if (!hotelId) return;
 
   const container = document.getElementById('scheduleTableBody');
   const countEl = document.getElementById('scheduleBookingCount');
   if (!container) return;
 
-  container.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-slate-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Đang tải dữ liệu đặt phòng...</td></tr>';
+  container.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-slate-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Đang tải dữ liệu đặt phòng...</td></tr>';
 
   try {
-    let url = `/api/bookings/hotel/${hotelId}?`;
-    if (startDate) url += `start_date=${startDate}&`;
-    if (endDate) url += `end_date=${endDate}`;
+    let url;
+    if (lastName) {
+      // Q8: Tra cứu theo Họ khách hàng
+      url = `/api/bookings/by-last-name?lastName=${encodeURIComponent(lastName)}&hotelId=${encodeURIComponent(hotelId)}`;
+    } else {
+      // Q7: Lịch trình đón khách theo Khách sạn & Ngày
+      url = `/api/bookings/hotel/${hotelId}?`;
+      if (startDate) url += `start_date=${startDate}&`;
+      if (endDate) url += `end_date=${endDate}`;
+    }
 
     const res = await fetch(url);
     const json = await res.json();
@@ -198,7 +206,7 @@ async function loadAdminHotelSchedule() {
     if (countEl) countEl.innerText = `${bookings.length} lượt đặt`;
 
     if (bookings.length === 0) {
-      container.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-slate-400">Không có lượt đặt phòng nào trong khoảng ngày này.</td></tr>';
+      container.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-400">${lastName ? `Không tìm thấy đơn nào của khách có họ "${lastName}".` : 'Không có lượt đặt phòng nào trong khoảng ngày này.'}</td></tr>`;
       return;
     }
 
@@ -206,11 +214,25 @@ async function loadAdminHotelSchedule() {
       const isCancelled = b.status === 'CANCELLED';
       const isCheckedIn = b.status === 'CHECKED_IN';
       const isCheckedOut = b.status === 'CHECKED_OUT';
+      const confirmNum = b.confirm_number || '16380824';
 
       return `
         <tr class="hover:bg-blue-50/40 border-b border-slate-100 transition-colors">
           
-          <!-- Cột 1: Mã đặt phòng UUID (HIỂN THỊ ĐẦY ĐỦ KÈM NÚT COPY) -->
+          <!-- Cột 1: Mã xác nhận Confirm Number (Q6: reservations_by_confirmation) -->
+          <td class="p-3.5">
+            <div class="flex items-center gap-1.5">
+              <span class="font-mono text-xs font-black text-amber-800 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-300 shadow-sm flex items-center gap-1">
+                <i class="fa-solid fa-ticket text-amber-500"></i> ${confirmNum}
+              </span>
+              <button onclick="copyToClipboard('${confirmNum}', this)" 
+                      class="px-1.5 py-1 text-[11px] font-bold bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 rounded-lg shadow-sm transition-all" title="Sao chép Confirm Number">
+                <i class="fa-regular fa-copy"></i>
+              </button>
+            </div>
+          </td>
+
+          <!-- Cột 2: Mã đặt phòng UUID (HIỂN THỊ ĐẦY ĐỦ KÈM NÚT COPY) -->
           <td class="p-3.5">
             <div class="flex items-center gap-1.5">
               <span class="font-mono text-xs font-bold text-blue-700 select-all break-all bg-blue-50 px-2 py-1 rounded-lg border border-blue-200/80">${b.booking_id}</span>
@@ -221,37 +243,38 @@ async function loadAdminHotelSchedule() {
             </div>
           </td>
 
-          <!-- Cột 2: Khách hàng (HIỂN THỊ CẢ TÊN VÀ MÃ KHÁCH HÀNG GUEST_ID) -->
+          <!-- Cột 3: Khách hàng (Q9: BẤM VÀO ĐỂ MỞ HỒ SƠ CHI TIẾT GUESTS) -->
           <td class="p-3.5">
-            <div class="font-bold text-slate-900">${b.guest_name || 'Khách vãng lai'}</div>
-            <div class="flex items-center gap-1.5 mt-0.5">
-              <span class="text-[11px] font-mono font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
-                <i class="fa-solid fa-id-card text-blue-500 mr-0.5"></i> ${b.guest_id || 'N/A'}
-              </span>
-              <button onclick="copyToClipboard('${b.guest_id}', this)" 
-                      class="text-[10px] text-slate-400 hover:text-slate-700 transition-colors" title="Sao chép Mã khách">
-                <i class="fa-regular fa-copy"></i>
-              </button>
-            </div>
+            <button onclick="openAdminGuestProfileModal('${b.guest_id}')" class="text-left group cursor-pointer focus:outline-none" title="Xem chi tiết hồ sơ khách hàng (Q9)">
+              <div class="font-bold text-slate-900 group-hover:text-blue-600 flex items-center gap-1.5 transition-colors">
+                <span>${b.guest_name || 'Khách vãng lai'}</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-blue-500 opacity-60 group-hover:opacity-100"></i>
+              </div>
+              <div class="flex items-center gap-1 mt-0.5">
+                <span class="text-[11px] font-mono font-semibold text-slate-500 bg-slate-100 group-hover:bg-blue-100 group-hover:text-blue-700 px-1.5 py-0.5 rounded border border-slate-200 transition-colors">
+                  <i class="fa-solid fa-id-card text-blue-500 mr-0.5"></i> ${b.guest_id || 'N/A'}
+                </span>
+              </div>
+            </button>
           </td>
 
-          <!-- Cột 3: Số phòng -->
+          <!-- Cột 4: Số phòng -->
           <td class="p-3.5">
             <span class="font-bold text-slate-800">Phòng ${b.room_number}</span>
           </td>
 
-          <!-- Cột 4: Ngày nhận & Ngày trả -->
+          <!-- Cột 5: Ngày nhận & Ngày trả -->
           <td class="p-3.5">
-            <div class="text-xs font-semibold text-slate-700">${b.check_in_date}</div>
-            <div class="text-[11px] text-slate-400">đến ${b.check_out_date}</div>
+            <div class="text-xs font-semibold text-slate-700">${b.check_in_date || b.start_date}</div>
+            <div class="text-[11px] text-slate-400">đến ${b.check_out_date || b.end_date}</div>
           </td>
 
-          <!-- Cột 5: Tổng tiền -->
+          <!-- Cột 6: Tổng tiền -->
           <td class="p-3.5 font-bold text-blue-600">
             ${Number(b.total_amount).toLocaleString('vi-VN')} đ
           </td>
 
-          <!-- Cột 6: Trạng thái -->
+          <!-- Cột 7: Trạng thái -->
           <td class="p-3.5">
             <span class="px-2.5 py-1 rounded-full text-[11px] font-bold ${
               isCancelled ? 'bg-red-100 text-red-700' :
@@ -262,14 +285,14 @@ async function loadAdminHotelSchedule() {
             </span>
           </td>
 
-          <!-- Cột 7: Thao tác -->
+          <!-- Cột 8: Thao tác -->
           <td class="p-3.5 text-right whitespace-nowrap">
             <button onclick="openAdminInvoiceDetailModal('${b.booking_id}')" 
-                    class="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs rounded-xl border border-blue-200 transition-colors mr-1">
+                    class="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs rounded-xl border border-blue-200 transition-colors mr-1 cursor-pointer">
               <i class="fa-solid fa-receipt mr-1"></i> Hoá đơn
             </button>
-            <a href="/?lookup=${encodeURIComponent(b.booking_id)}" target="_blank"
-               class="px-2.5 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold text-xs rounded-xl border border-slate-200 transition-colors" title="Mở trang tra cứu của khách">
+            <a href="/?lookup=${encodeURIComponent(b.confirm_number || b.booking_id)}" target="_blank"
+               class="px-2.5 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold text-xs rounded-xl border border-slate-200 transition-colors" title="Mở trang tra cứu của khách (Q6)">
               <i class="fa-solid fa-up-right-from-square"></i>
             </a>
           </td>
@@ -281,6 +304,49 @@ async function loadAdminHotelSchedule() {
   } catch (err) {
     console.error('Lỗi tải lịch trình đặt phòng:', err);
   }
+}
+
+function resetScheduleFilter() {
+  const lastInput = document.getElementById('scheduleLastName');
+  if (lastInput) lastInput.value = '';
+  const startInput = document.getElementById('scheduleStartDate');
+  if (startInput) startInput.value = '';
+  const endInput = document.getElementById('scheduleEndDate');
+  if (endInput) endInput.value = '';
+  loadAdminHotelSchedule();
+}
+
+// Q9. Mở Modal xem hồ sơ chi tiết khách hàng
+async function openAdminGuestProfileModal(guestId) {
+  if (!guestId || guestId === 'N/A') return;
+  try {
+    const res = await fetch(`/api/guests/${encodeURIComponent(guestId)}`);
+    const json = await res.json();
+    if (!json.success || !json.data) {
+      alert('Không tìm thấy thông tin chi tiết khách hàng này trong bảng guests.');
+      return;
+    }
+    const g = json.data;
+    const fullName = g.full_name || `${g.last_name || ''} ${g.first_name || ''}`.trim() || 'Khách Lưu Trú';
+    const initials = (g.first_name || g.last_name || 'KH').slice(0, 2).toUpperCase();
+
+    document.getElementById('admGuestAvatarText').innerText = initials;
+    document.getElementById('admGuestFullName').innerText = fullName;
+    document.getElementById('admGuestIdBadge').innerText = g.guest_id;
+    document.getElementById('admGuestEmail').innerText = g.email || 'Chưa cập nhật';
+    document.getElementById('admGuestPhone').innerText = g.phone_numbers || 'Chưa cập nhật';
+    document.getElementById('admGuestAddress').innerText = g.addresses || 'Chưa cập nhật';
+    document.getElementById('admGuestTotalBookings').innerText = `${g.total_bookings || 0} lượt`;
+    document.getElementById('admGuestTotalSpent').innerText = `${(g.total_spent || 0).toLocaleString('vi-VN')} đ`;
+
+    document.getElementById('adminGuestProfileModal')?.classList.remove('hidden');
+  } catch (err) {
+    console.error('Lỗi khi tải hồ sơ khách hàng Q9:', err);
+  }
+}
+
+function closeAdminGuestProfileModal() {
+  document.getElementById('adminGuestProfileModal')?.classList.add('hidden');
 }
 
 // 3. Modal xem chi tiết đơn & Hoá đơn trên trang Admin

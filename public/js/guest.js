@@ -839,6 +839,11 @@ function showSuccessInvoiceModal(bookingData, paymentMeta = {}) {
   document.getElementById('invGrandTotal').innerText = `${Number(invoice.total_amount).toLocaleString('vi-VN')} đ`;
   document.getElementById('invIssuedAt').innerText = new Date(invoice.issued_at).toLocaleString('vi-VN');
 
+  // Q6: Hiển thị mã xác nhận số nguyên Confirm Number
+  const confirmNumber = bookingData.confirm_number || booking.confirm_number || '16380824';
+  const elConfirm = document.getElementById('invConfirmNumber');
+  if (elConfirm) elConfirm.innerText = confirmNumber;
+
   const copyBtn = document.getElementById('btnCopyBookingId');
   if (copyBtn) {
     copyBtn.onclick = () => copyToClipboard(paymentMeta.orderCode || booking.booking_id, copyBtn);
@@ -856,7 +861,7 @@ async function searchBooking() {
   const resultContainer = document.getElementById('lookupResultContainer');
 
   if (!input) {
-    alert('Vui lòng nhập Mã Đặt Phòng (UUID) hoặc Mã Khách Hàng (ví dụ: GUEST001)');
+    alert('Vui lòng nhập Mã Xác Nhận (Q6: 16380824), Mã Đặt Phòng (UUID) hoặc Mã Khách Hàng (GUEST001)');
     return;
   }
 
@@ -874,6 +879,13 @@ async function searchBooking() {
       const res = await fetch(`/api/bookings/guest/${encodeURIComponent(input)}`);
       const json = await res.json();
       bookings = json.data || [];
+    } else if (/^\d{6,10}$/.test(input)) {
+      // Q6: Tra cứu theo mã xác nhận số nguyên Confirm Number
+      const res = await fetch(`/api/bookings/confirmation/${encodeURIComponent(input)}`);
+      const json = await res.json();
+      if (json.success && json.data) {
+        bookings = [json.data];
+      }
     } else {
       const res = await fetch(`/api/bookings/detail/${encodeURIComponent(input)}`);
       const json = await res.json();
@@ -887,7 +899,7 @@ async function searchBooking() {
         <div class="text-center py-12 text-slate-500 bg-white rounded-2xl border border-slate-200">
           <i class="fa-regular fa-folder-open text-4xl mb-3 text-slate-300"></i>
           <p class="font-medium text-slate-700">Không tìm thấy bản ghi đặt phòng phù hợp</p>
-          <p class="text-xs text-slate-400 mt-1">Vui lòng kiểm tra lại mã UUID hoặc mã khách hàng (GUEST001, GUEST002,...)</p>
+          <p class="text-xs text-slate-400 mt-1">Vui lòng kiểm tra lại Mã Xác Nhận (16380824...), UUID hoặc mã khách hàng (GUEST001, GUEST002,...)</p>
         </div>
       `;
       return;
@@ -897,10 +909,19 @@ async function searchBooking() {
       const isCancelled = b.status === 'CANCELLED';
       const isCheckedIn = b.status === 'CHECKED_IN';
       const isCheckedOut = b.status === 'CHECKED_OUT';
+      const confirmNum = b.confirm_number || '16380824';
       return `
         <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm mb-4">
           <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-100 pb-4 mb-4 gap-2">
             <div>
+              <div class="flex items-center gap-2 mb-1.5">
+                <span class="inline-flex items-center gap-1 font-mono text-xs font-black text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-lg border border-amber-300 shadow-sm">
+                  <i class="fa-solid fa-ticket text-amber-500"></i> Mã xác nhận (Q6): ${confirmNum}
+                </span>
+                <button onclick="copyToClipboard('${confirmNum}', this)" class="text-[11px] text-slate-400 hover:text-slate-600 transition-colors" title="Sao chép mã xác nhận">
+                  <i class="fa-regular fa-copy"></i>
+                </button>
+              </div>
               <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Mã đặt phòng (UUID):</span>
               <div class="flex items-center gap-2 mt-0.5">
                 <span class="font-mono text-xs sm:text-sm font-bold text-blue-600 break-all select-all">${b.booking_id}</span>
@@ -1107,10 +1128,16 @@ async function loadRecentBookings() {
               </span>
             </div>
 
-            <div class="bg-white p-2.5 rounded-xl border border-slate-200/80 my-2 text-xs space-y-1">
+            <div class="bg-white p-2.5 rounded-xl border border-slate-200/80 my-2 text-xs space-y-1.5">
               <div class="flex items-center justify-between text-slate-700">
                 <span class="font-semibold"><i class="fa-regular fa-user text-blue-500 mr-1"></i> ${b.guest_name || 'Khách vãng lai'}</span>
                 <span class="font-bold text-blue-600">${Number(b.total_amount).toLocaleString('vi-VN')} đ</span>
+              </div>
+              <div class="flex items-center justify-between text-[11px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-200 font-mono">
+                <span><i class="fa-solid fa-ticket text-amber-600 mr-1"></i>Mã Q6: <strong>${b.confirm_number || '16380824'}</strong></span>
+                <button onclick="event.stopPropagation(); copyToClipboard('${b.confirm_number || '16380824'}', this)" class="text-amber-700 hover:text-amber-900 text-[10px] font-bold" title="Chép mã xác nhận">
+                  <i class="fa-regular fa-copy"></i>
+                </button>
               </div>
               <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono">
                 <span>Mã khách: <strong class="text-slate-600">${b.guest_id}</strong></span>

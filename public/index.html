@@ -311,7 +311,7 @@
           </div>
           <h2 class="text-2xl font-bold text-slate-900">Tra Cứu Thông Tin Đặt Phòng</h2>
           <p class="text-xs text-slate-500 mt-1">
-            Tra cứu theo <strong class="text-slate-700">Mã Đặt Phòng (UUID)</strong> hoặc <strong class="text-slate-700">Mã Khách Hàng (guest_id)</strong>
+            Tra cứu bằng <strong class="text-amber-700">Mã Xác Nhận (Confirm Number - Q6: 16380824...)</strong>, <strong class="text-slate-700">Mã Đặt Phòng (UUID)</strong> hoặc <strong class="text-slate-700">Mã Khách Hàng (guest_id)</strong>
           </p>
         </div>
 
@@ -320,8 +320,9 @@
           <div class="relative flex-1">
             <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-xs"></i>
             <input type="text" id="lookupInput" 
-                   placeholder="Dán mã UUID (ví dụ: 16380824-...) hoặc Mã khách (GUEST001, GUEST002,...)" 
-                   class="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                   placeholder="Nhập Mã xác nhận (Q6: 16380824), Mã UUID hoặc Mã khách (GUEST001, GUEST002,...)" 
+                   class="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   onkeydown="if(event.key==='Enter') searchBooking()">
           </div>
           <button onclick="searchBooking()" 
                   class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 flex-shrink-0 shadow-sm">
@@ -332,9 +333,15 @@
         <!-- Gợi ý nhanh các mã mẫu để test -->
         <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 mb-6 text-xs">
           <div class="text-[11px] font-bold text-slate-500 mb-2 uppercase">
-            <i class="fa-regular fa-lightbulb text-amber-500 mr-1"></i> Bấm để thử nhanh dữ liệu mẫu:
+            <i class="fa-regular fa-lightbulb text-amber-500 mr-1"></i> Bấm để thử nhanh dữ liệu mẫu NoSQL:
           </div>
           <div class="flex flex-wrap gap-2">
+            <button onclick="setLookupInput('16380824')" class="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold rounded-lg border border-amber-300 shadow-sm transition-colors flex items-center gap-1">
+              <i class="fa-solid fa-ticket text-amber-600"></i> Mã Q6: 16380824
+            </button>
+            <button onclick="setLookupInput('39102845')" class="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold rounded-lg border border-amber-300 shadow-sm transition-colors flex items-center gap-1">
+              <i class="fa-solid fa-ticket text-amber-600"></i> Mã Q6: 39102845
+            </button>
             <button onclick="setLookupInput('GUEST001')" class="px-2.5 py-1 bg-white hover:bg-blue-50 text-blue-600 font-semibold rounded-lg border border-slate-200 shadow-sm transition-colors">
               Mã khách: GUEST001
             </button>
@@ -1035,6 +1042,20 @@
 
         <div class="py-4 space-y-2.5 text-xs">
           
+          <!-- Q6: Mã xác nhận số nguyên ngắn gọn -->
+          <div class="bg-amber-50 p-3 rounded-xl border border-amber-200">
+            <div class="text-[10px] text-amber-800 uppercase font-bold flex items-center justify-between">
+              <span><i class="fa-solid fa-ticket text-amber-500 mr-1"></i> Mã xác nhận (Confirm Number - Q6):</span>
+              <span class="text-[9px] bg-amber-200/60 text-amber-900 px-1.5 py-0.5 rounded font-mono font-bold">Check-in nhanh</span>
+            </div>
+            <div class="flex items-center justify-between gap-2 mt-1">
+              <span id="invConfirmNumber" class="font-mono text-sm sm:text-base font-black text-amber-900 tracking-wider">16380824</span>
+              <button onclick="copyToClipboard(document.getElementById('invConfirmNumber').innerText, this)" class="px-2 py-1 text-[11px] font-bold bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors flex items-center gap-1">
+                <i class="fa-regular fa-copy"></i> Sao chép
+              </button>
+            </div>
+          </div>
+
           <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
             <div class="text-[11px] text-slate-400 uppercase font-bold">Mã xác nhận đặt phòng (Booking UUID):</div>
             <div class="flex items-center justify-between gap-2 mt-1">

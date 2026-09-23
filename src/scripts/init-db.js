@@ -93,7 +93,7 @@ const schemaStatements = [
     PRIMARY KEY ((hotel_id), check_in_date, booking_id)
   ) WITH CLUSTERING ORDER BY (check_in_date ASC, booking_id ASC);`,
 
-  // 9. reservations_by_confirmation
+  // 9. reservations_by_confirmation (Q6)
   `CREATE TABLE IF NOT EXISTS reservations_by_confirmation (
     confirm_number int,
     hotel_id text,
@@ -103,6 +103,18 @@ const schemaStatements = [
     guest_id text,
     PRIMARY KEY (confirm_number, hotel_id)
   ) WITH CLUSTERING ORDER BY (hotel_id ASC);`,
+
+  // 9b. reservations_by_guest (Q8)
+  `CREATE TABLE IF NOT EXISTS reservations_by_guest (
+    guest_last_name text,
+    hotel_id text,
+    guest_id text,
+    room_id text,
+    start_date date,
+    end_date date,
+    confirm_number int,
+    PRIMARY KEY (guest_last_name, hotel_id, guest_id)
+  ) WITH CLUSTERING ORDER BY (hotel_id ASC, guest_id ASC);`,
 
   // 10. invoices_by_booking
   `CREATE TABLE IF NOT EXISTS invoices_by_booking (
