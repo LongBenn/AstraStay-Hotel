@@ -196,6 +196,25 @@ async function seedDatabase() {
       }
     }
 
+    // 17. Nạp hotel_reviews & hotel_reviews_by_id
+    console.log('-> Nạp bảng hotel_reviews & hotel_reviews_by_id...');
+    for (const hr of (mockStore.hotel_reviews || [])) {
+      try {
+        await client.execute(
+          'INSERT INTO hotel_reviews (hotel_id, review_id, user_id, user_name, user_avatar, booking_id, confirm_number, room_number, room_type, rating, comment, status, is_verified_stay, stay_date, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);',
+          [hr.hotel_id, hr.review_id, hr.user_id, hr.user_name, hr.user_avatar, hr.booking_id, hr.confirm_number, hr.room_number, hr.room_type, hr.rating, hr.comment, hr.status, hr.is_verified_stay, hr.stay_date, hr.created_at, hr.updated_at],
+          { prepare: true }
+        );
+        await client.execute(
+          'INSERT INTO hotel_reviews_by_id (review_id, hotel_id, user_id, booking_id, confirm_number, rating, comment, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);',
+          [hr.review_id, hr.hotel_id, hr.user_id, hr.booking_id, hr.confirm_number, hr.rating, hr.comment, hr.status, hr.created_at, hr.updated_at],
+          { prepare: true }
+        );
+      } catch (e) {
+        // Skip duplicate
+      }
+    }
+
     console.log('\n Đã nạp thành công toàn bộ dữ liệu mẫu mở rộng (Q1-Q9) lên Astra DB!');
   } catch (err) {
     console.error('\n Lỗi khi nạp dữ liệu mẫu:', err);
